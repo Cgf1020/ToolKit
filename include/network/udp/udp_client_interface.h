@@ -1,0 +1,92 @@
+#ifndef ITFLEE_UDP_CLIENT_INTERFACE_H_
+#define ITFLEE_UDP_CLIENT_INTERFACE_H_
+
+#include "define.h"
+#include "network/udp/udp_callback.h"
+#include "base/eventloop/event_loop_interface.h"
+
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string>
+
+namespace itflee {
+
+/**
+ * @file udp_client_interface.h
+ * @brief UDP 客户端抽象接口定义。
+ */
+
+/**
+ * @brief UDP 客户端抽象接口。
+ * @note 设计参考 hv::UdpClient，基于 EventLoopInterface 驱动异步 I/O。
+ * @note Open() 设置远端地址 → Start() 开始收发。
+ */
+class ITFLEEEXPORT UdpClientInterface {
+public:
+    /** @brief 虚析构，允许通过基类指针安全释放实现对象。 */
+    virtual ~UdpClientInterface() = default;
+
+    /**
+     * @brief 工厂方法。
+     * @param callback UDP 消息回调。
+     * @param loop     事件循环；为空则内部创建 EventLoopThread。
+     */
+    static std::shared_ptr<UdpClientInterface> Create(
+        std::shared_ptr<UdpCallback> callback,
+        std::shared_ptr<EventLoopInterface> loop = nullptr);
+
+    /**
+     * @brief 设置远端地址并打开 UDP 套接字（同步操作）。
+     * @return 0 成功；负值失败。
+     */
+    virtual int Open(const std::string& remote_host, int remote_port) = 0;
+
+    /** @brief 启动收包流程。 */
+    virtual void Start() = 0;
+    /** @brief 停止收发并释放底层资源。 */
+    virtual void Stop() = 0;
+
+    /**
+     * @brief 获取绑定的事件循环实例。
+     * @return Create 时传入的 loop，或内部创建并持有的 loop。
+     */
+    virtual std::shared_ptr<EventLoopInterface> GetLoop() const noexcept = 0;
+
+    /**
+     * @brief 向已设定的远端地址发送数据。
+     * @return 0 已提交；-1 未打开。
+     */
+    virtual int Send(const void* data, std::size_t len) = 0;
+
+    /**
+     * @brief Send 的字符串便捷重载。
+     * @param str 待发送字符串。
+     * @return 0 已提交；-1 未打开。
+     */
+    int Send(const std::string& str) { return Send(str.data(), str.size()); }
+
+    /**
+     * @brief 向指定地址发送数据（不影响默认远端地址）。
+     */
+    virtual int SendTo(const void* data, std::size_t len,
+                       const std::string& host, uint16_t port) = 0;
+
+    /**
+     * @brief SendTo 的字符串便捷重载。
+     * @param str  待发送字符串。
+     * @param host 目标主机地址。
+     * @param port 目标端口。
+     * @return 0 已提交；负值失败。
+     */
+    int SendTo(const std::string& str, const std::string& host, uint16_t port) {
+        return SendTo(str.data(), str.size(), host, port);
+    }
+
+protected:
+    UdpClientInterface() = default;
+};
+
+} // namespace itflee
+
+#endif // ITFLEE_UDP_CLIENT_INTERFACE_H_
