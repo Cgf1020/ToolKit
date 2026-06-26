@@ -36,7 +36,7 @@ namespace itflee {
 			{
 				if (!cnsNext)
 				{
-					cnsNext = 1000 * timeout_ms_.load();	//���ﻻ���΢����Ϊ��������ʱʱ�䵽��ִ���ⲿ������ʱ���
+					cnsNext = 1000 * timeout_ms_.load();	// convert ms to microseconds for wait_for timeout
 				}
 				std::unique_lock<std::mutex> locker(mutex_);
 
@@ -65,7 +65,7 @@ namespace itflee {
 				expired_cond_.notify_all();
 			}
 
-			//֪ͨ�ⲿ���������ʱ��
+			// notify external destroy callback (optional)
 			// if (destory_)
 			// {
 			// 	destory_(timer_name_);

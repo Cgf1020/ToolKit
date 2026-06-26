@@ -15,7 +15,7 @@ public:
     ~Widget();
 
 public:
-    // 播放按钮点击事件
+    // 鎾斁鎸夐挳鐐瑰嚮浜嬩欢
     void PushButtonClick();
     void PushButtonClick2();
     void PushButtonClick3();

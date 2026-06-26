@@ -1,10 +1,13 @@
 {
-    "C_Cpp.default.compilerPath": "cl.exe",
-    "cmake.generator": "Visual Studio 17 2022",
-    "cmake.preferredGenerators": [
-        "Visual Studio 17 2022"
+    "files.encoding": "utf8",
+    "clangd.path": "D:/work_software/LLVM/bin/clangd.exe",
+    "clangd.arguments": [
+        "--background-index",
+        "--compile-commands-dir=${workspaceFolder}",
+        "--query-driver=D:/work_software/LLVM/bin/clang-cl.exe;D:/Microsoft/Microsoft Visual Studio/**/clang-cl.exe"
     ],
-    "cmake.platform": "x64",
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "C_Cpp.default.compilerPath": "D:/Microsoft/Microsoft Visual Studio/2022/Community/VC/Tools/Llvm/x64/bin/clang-cl.exe",
     "files.associations": {
         "variant": "cpp",
         "algorithm": "cpp",

@@ -6,7 +6,7 @@
 #ifdef  _WIN32
     #include <Windows.h>
     #include <TlHelp32.h>       //GetProcessIdByName
-    #pragma warning(disable:4244)       //���� std::string(std::wstring.begin(), wstring.end()) ����
+    #pragma warning(disable:4244)       // suppress C4244 for wstring-to-string conversion
 #endif //  _WINDOWS
 
 

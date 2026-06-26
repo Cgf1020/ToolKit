@@ -1,0 +1,99 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "vs2022-clangcl",
+      "displayName": "VS 2022 + ClangCL",
+      "description": "Visual Studio 17 2022 + ClangCL toolset (IDE build)",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "toolset": "ClangCL",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "ENABLE_WEBSOCKET": "OFF",
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "ninja-clangcl",
+      "displayName": "Ninja + LLVM clang-cl",
+      "description": "LLVM clang-cl + Ninja + lld-link; exports compile_commands.json",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/clangcl-db.cmake",
+        "CMAKE_TRY_COMPILE_TARGET_TYPE": "STATIC_LIBRARY",
+        "ENABLE_WEBSOCKET": "OFF",
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "ninja-linux",
+      "displayName": "Ninja (Linux)",
+      "description": "Linux single-config Ninja build",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "ENABLE_WEBSOCKET": "OFF",
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "xcode-macos",
+      "displayName": "Xcode (macOS)",
+      "description": "macOS multi-config Xcode build",
+      "generator": "Xcode",
+      "binaryDir": "${sourceDir}/build",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "ENABLE_WEBSOCKET": "OFF",
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "configurePreset": "vs2022-clangcl",
+      "configuration": "Debug"
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "configurePreset": "vs2022-clangcl",
+      "configuration": "Release"
+    },
+    {
+      "name": "ninja-toolkit",
+      "displayName": "Ninja ToolKit (sync compile_commands)",
+      "configurePreset": "ninja-clangcl",
+      "targets": ["ToolKit"]
+    },
+    {
+      "name": "linux-debug",
+      "displayName": "Linux Debug",
+      "configurePreset": "ninja-linux",
+      "targets": ["ToolKit"]
+    },
+    {
+      "name": "macos-debug",
+      "displayName": "macOS Debug",
+      "configurePreset": "xcode-macos",
+      "configuration": "Debug"
+    }
+  ]
+}

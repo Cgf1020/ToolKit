@@ -1,18 +1,18 @@
-生成release版本，这个版本的只有单配置器是可以的
+构建说明见 BUILD.md（Windows 双目录 / macOS / Linux）。
+
+生成 release 版本（单配置生成器）：
 cd build
-rm -rf CMakeCache.txt CMakeFiles  # 清除旧的配置
-cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_WEBSOCKET=OFF ..   // Debug  Release
+rm -rf CMakeCache.txt CMakeFiles
+cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_WEBSOCKET=OFF ..
 cmake --build . -j$(nproc)
 
-#windows、linux   跨平台可以的
+# Windows / Linux 跨平台
 cmake -S . -B build -DBUILD_SHARED_LIBS=ON -DENABLE_WEBSOCKET=OFF
-cmake -S . -B build -DENABLE_WEBSOCKET=OFF
-cmake --build build --config Release/Debug
+cmake --build build --config Release
 
+src/ 目录备注：
 
-src/目录下的
-
-1.TCP server 和 client 不再使用，有很多bug，以后使用 libhv中的(事件循环)
-2.json 可以使用自己的(使用中没有出现bug)，也可以使用第三方库中的，未测试 他们的性能咋样
-3.日志在代码中使用是没有问题的
-3.其他的源码，在实践中有待验证
+1. TCP server 和 client 不再使用，有很多 bug，以后使用 libhv 中的（事件循环）
+2. json 可以使用自己的（使用中没有出现 bug），也可以使用第三方库，未测试性能
+3. 日志在代码中使用没有问题
+4. 其他源码在实践中待验证

@@ -1,9 +1,11 @@
-# ����Ŀ¼
+# Build directories
 build/
+build-ninja/
 out/
 cmake-build-*/
+compile_commands.json
 
-# CMake �����ļ���Դ���������� in-source ��ɢ�����ʱ��
+# CMake generated files (in-source build artifacts)
 CMakeCache.txt
 CMakeFiles/
 CMakeScripts/
@@ -21,7 +23,7 @@ rules.ninja
 .ninja_deps
 .ninja_log
 
-# �������
+# Object / binary outputs
 *.o
 *.obj
 *.lo
@@ -34,7 +36,7 @@ rules.ninja
 *.dylib
 *.exe
 
-# Ԥ����ͷ����Է���
+# Precompiled headers and linker artifacts
 *.pch
 *.pdb
 *.ilk
@@ -61,13 +63,13 @@ Win32/
 [Rr]el[Ww]ith[Dd]eb[Ii]nfo/
 [Mm]in[Ss]ize[Rr]el/
 
-# GCC / Clang ������������
+# GCC / Clang coverage
 *.gcno
 *.gcda
 *.gcov
 *.d
 
-# ����
+# Misc
 *.tmp
 *.temp
 *.log
