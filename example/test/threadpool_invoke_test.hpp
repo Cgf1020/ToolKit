@@ -23,21 +23,21 @@ namespace test {
 
         // [1] void, no args
         std::cout << "[1] void, no args\n";
-        pool->Invoke([]() {
+        pool->InvokeAsync([]() {
             std::cout << "  thread id: " << std::this_thread::get_id() << "\n";
             std::cout << "  task 1 done\n";
         });
 
         // [2] void, with args
         std::cout << "\n[2] void, with args\n";
-        pool->Invoke([](int a, const std::string& msg) {
+        pool->InvokeAsync([](int a, const std::string& msg) {
             std::cout << "  thread id: " << std::this_thread::get_id() << "\n";
             std::cout << "  task2 a=" << a << ", msg=\"" << msg << "\"\n";
         }, 42, "Hello Pool");
 
         // [3] returns value, no args
         std::cout << "\n[3] returns value, no args\n";
-        auto future1 = pool->Invoke([]() -> int {
+        auto future1 = pool->InvokeAsync([]() -> int {
             std::cout << "  thread id: " << std::this_thread::get_id() << "\n";
             return 100;
         });
@@ -46,7 +46,7 @@ namespace test {
 
         // [4] returns value, with args
         std::cout << "\n[4] returns value, with args\n";
-        auto future2 = pool->Invoke([](int a, int b) -> int {
+        auto future2 = pool->InvokeAsync([](int a, int b) -> int {
             std::cout << "  thread id: " << std::this_thread::get_id() << "\n";
             return a + b;
         }, 10, 20);
@@ -108,7 +108,7 @@ namespace test {
 
         std::atomic<int> done{0};
         for (int i = 0; i < 8; ++i) {
-            pool->Invoke([&done, i]() {
+            pool->InvokeAsync([&done, i]() {
                 std::this_thread::sleep_for(std::chrono::milliseconds(20));
                 done += i;
             });
@@ -121,7 +121,7 @@ namespace test {
             std::cout << "  worker IsCurrent: " << (pool->IsCurrent() ? "yes" : "no") << "\n";
         });
 
-        pool->Invoke([]() {});
+        pool->InvokeAsync([]() {});
         pool->ClearTask();
         std::cout << "  ClearTask called\n";
 
@@ -143,7 +143,7 @@ namespace test {
         std::cout << "  submit " << num_tasks << " tasks, then Wait()...\n";
 
         for (int i = 0; i < num_tasks; ++i) {
-            pool->Invoke([&completed, i]() {
+            pool->InvokeAsync([&completed, i]() {
                 std::this_thread::sleep_for(std::chrono::milliseconds(2000));
                 completed += 1;
             });

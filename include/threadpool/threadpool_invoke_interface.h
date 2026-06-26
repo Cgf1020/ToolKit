@@ -5,18 +5,22 @@
 #include <future>
 #include <functional>
 #include <memory>
+#include <exception>
 #include <cstddef>
 #include <cstdint>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "define.h"
 
 namespace itflee {
 
-    using TaskFunc = std::function<void()>;
-    using Priority_t = std::int8_t;
+    using TaskFunc         = std::function<void()>;
+    using ErrorHandler     = std::function<void(std::exception_ptr)>;
+    using CompleteHandler  = std::function<void()>;
+    using Priority_t       = std::int8_t;
 
     enum class TaskPriority : Priority_t {
         Lowest  = -128,
@@ -27,13 +31,24 @@ namespace itflee {
     };
 
     struct Task {
-        TaskFunc   func;
-        Priority_t priority = static_cast<Priority_t>(TaskPriority::Normal);
+        TaskFunc        func;
+        CompleteHandler on_complete;
+        ErrorHandler    on_error;
+        Priority_t      priority = static_cast<Priority_t>(TaskPriority::Normal);
 
         Task() = default;
 
         Task(TaskFunc f, Priority_t p = static_cast<Priority_t>(TaskPriority::Normal))
             : func(std::move(f)), priority(p) {}
+
+        Task(TaskFunc f,
+             CompleteHandler complete,
+             ErrorHandler error,
+             Priority_t p = static_cast<Priority_t>(TaskPriority::Normal))
+            : func(std::move(f))
+            , on_complete(std::move(complete))
+            , on_error(std::move(error))
+            , priority(p) {}
 
         friend bool operator<(const Task& lhs, const Task& rhs) noexcept {
             return lhs.priority < rhs.priority;
@@ -144,28 +159,122 @@ namespace itflee {
         virtual bool IsCurrent() const = 0;
 
         /**
-         * Submit a task and return a future for its result.
-         * @param f the function to invoke
-         * @param args the arguments to pass to the function
-         * @return a future for the result of the function
+         * Asynchronously submit a task and return a future (default priority).
          */
         template<typename F, typename... Args>
-        auto Invoke(F&& f, Args&&... args) -> std::future<std::invoke_result_t<F, Args...>> {
-            return InvokeWithPriority(TaskPriority::Normal,
-                                      std::forward<F>(f),
-                                      std::forward<Args>(args)...);
+        auto InvokeAsync(F&& f, Args&&... args) -> std::future<std::invoke_result_t<F, Args...>> {
+            return InvokeAsyncFuture(TaskPriority::Normal,
+                                     std::forward<F>(f),
+                                     std::forward<Args>(args)...);
         }
 
         /**
-         * Submit a task and return a future for its result with a specified priority.
-         * @param priority the priority of the task
-         * @param f the function to invoke
-         * @param args the arguments to pass to the function
-         * @return a future for the result of the function
+         * Asynchronously submit a task with priority and return a future.
          */
         template<typename F, typename... Args>
-        auto InvokeWithPriority(TaskPriority priority,
-                                F&& f, Args&&... args)
+        auto InvokeAsync(TaskPriority priority,
+                         F&& f, Args&&... args)
+            -> std::future<std::invoke_result_t<F, Args...>>
+        {
+            return InvokeAsyncFuture(priority,
+                                     std::forward<F>(f),
+                                     std::forward<Args>(args)...);
+        }
+
+        /**
+         * Asynchronously submit a task with success callback (default priority).
+         * Callbacks run on the worker thread. Also returns a future.
+         */
+        template<typename F, typename OnSuccess, typename... Args>
+        auto InvokeAsync(F&& f,
+                         OnSuccess&& on_success,
+                         Args&&... args)
+            -> std::future<std::invoke_result_t<F, Args...>>
+        {
+            return InvokeAsyncWithCallbacks(TaskPriority::Normal,
+                                            std::forward<F>(f),
+                                            std::forward<OnSuccess>(on_success),
+                                            ErrorHandler{},
+                                            std::forward<Args>(args)...);
+        }
+
+        /**
+         * Asynchronously submit a task with success/error callbacks (default priority).
+         * Callbacks run on the worker thread. Also returns a future.
+         */
+        template<typename F, typename OnSuccess, typename OnError, typename... Args>
+        auto InvokeAsync(F&& f,
+                         OnSuccess&& on_success,
+                         OnError&& on_error,
+                         Args&&... args)
+            -> std::future<std::invoke_result_t<F, Args...>>
+        {
+            return InvokeAsyncWithCallbacks(TaskPriority::Normal,
+                                            std::forward<F>(f),
+                                            std::forward<OnSuccess>(on_success),
+                                            std::forward<OnError>(on_error),
+                                            std::forward<Args>(args)...);
+        }
+
+        /**
+         * Asynchronously submit a task with priority and success callback.
+         * Callbacks run on the worker thread. Also returns a future.
+         */
+        template<typename F, typename OnSuccess, typename... Args>
+        auto InvokeAsync(TaskPriority priority,
+                         F&& f,
+                         OnSuccess&& on_success,
+                         Args&&... args)
+            -> std::future<std::invoke_result_t<F, Args...>>
+        {
+            return InvokeAsyncWithCallbacks(priority,
+                                            std::forward<F>(f),
+                                            std::forward<OnSuccess>(on_success),
+                                            ErrorHandler{},
+                                            std::forward<Args>(args)...);
+        }
+
+        /**
+         * Asynchronously submit a task with priority and success/error callbacks.
+         * Callbacks run on the worker thread. Also returns a future.
+         */
+        template<typename F, typename OnSuccess, typename OnError, typename... Args>
+        auto InvokeAsync(TaskPriority priority,
+                         F&& f,
+                         OnSuccess&& on_success,
+                         OnError&& on_error,
+                         Args&&... args)
+            -> std::future<std::invoke_result_t<F, Args...>>
+        {
+            return InvokeAsyncWithCallbacks(priority,
+                                            std::forward<F>(f),
+                                            std::forward<OnSuccess>(on_success),
+                                            std::forward<OnError>(on_error),
+                                            std::forward<Args>(args)...);
+        }
+
+        /**
+         * Submit and wait for result; if current thread is a pool worker, run directly.
+         */
+        template<typename F, typename... Args>
+        auto InvokeSync(F&& f, Args&&... args) -> std::invoke_result_t<F, Args...> {
+            if (IsCurrent()) {
+                return std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
+            }
+            return InvokeAsync(std::forward<F>(f), std::forward<Args>(args)...).get();
+        }
+
+        /**
+         * Submit a pre-built task. Callbacks run on the worker thread that executes the task.
+         */
+        void Submit(Task&& task) {
+            PushTask(std::move(task));
+        }
+
+    protected:
+        template<typename F, typename... Args>
+        auto InvokeAsyncFuture(TaskPriority priority,
+                               F&& f, Args&&... args)
             -> std::future<std::invoke_result_t<F, Args...>>
         {
             using ReturnType = std::invoke_result_t<F, Args...>;
@@ -187,25 +296,55 @@ namespace itflee {
             return res;
         }
 
-        /**
-         * Submit and wait for result; if current thread is a pool worker, run directly.
-         * @param f the function to invoke
-         * @param args the arguments to pass to the function
-         * @return the result of the function
-         */
-        template<typename F, typename... Args>
-        auto InvokeSync(F&& f, Args&&... args) -> std::invoke_result_t<F, Args...> {
-            if (IsCurrent()) {
-                return std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
-            }
-            return Invoke(std::forward<F>(f), std::forward<Args>(args)...).get();
+        template<typename F, typename OnSuccess, typename OnError, typename... Args>
+        auto InvokeAsyncWithCallbacks(TaskPriority priority,
+                                      F&& f,
+                                      OnSuccess&& on_success,
+                                      OnError&& on_error,
+                                      Args&&... args)
+            -> std::future<std::invoke_result_t<F, Args...>>
+        {
+            using ReturnType = std::invoke_result_t<F, Args...>;
+
+            auto promise = std::make_shared<std::promise<ReturnType>>();
+            std::future<ReturnType> res = promise->get_future();
+
+            Task task{
+                [promise,
+                 f = std::forward<F>(f),
+                 on_success = std::forward<OnSuccess>(on_success),
+                 on_error = std::forward<OnError>(on_error),
+                 args_tuple = std::make_tuple(std::forward<Args>(args)...)]() mutable {
+                    try {
+                        if constexpr (std::is_void_v<ReturnType>) {
+                            std::apply(std::move(f), std::move(args_tuple));
+                            promise->set_value();
+                            std::invoke(std::move(on_success));
+                        } else {
+                            auto result = std::apply(std::move(f), std::move(args_tuple));
+                            promise->set_value(result);
+                            std::invoke(std::move(on_success), std::move(result));
+                        }
+                    } catch (...) {
+                        const auto eptr = std::current_exception();
+                        promise->set_exception(eptr);
+                        if constexpr (std::is_same_v<std::decay_t<OnError>, ErrorHandler>) {
+                            if (on_error) {
+                                on_error(eptr);
+                            }
+                        } else {
+                            std::invoke(std::move(on_error), eptr);
+                        }
+                    }
+                },
+                static_cast<Priority_t>(priority)
+            };
+            this->PushTask(std::move(task));
+            return res;
         }
 
-    protected:
         /**
          * Push a task to the task queue.
-         * @param task the task to push
-         * @return void
          */
         virtual void PushTask(Task&& task) = 0;
     };

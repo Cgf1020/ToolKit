@@ -65,6 +65,7 @@ namespace itflee {
 
     private:
         void WorkerLoop();
+        void ExecuteTask(Task& task);
         void CreateThreads();
         void DestroyThreads();
 

@@ -82,6 +82,23 @@ namespace itflee {
         task_cv_.notify_one();
     }
 
+    void ThreadPoolInvokeImpl::ExecuteTask(Task& task) {
+        if (!task.func) {
+            return;
+        }
+        try {
+            task.func();
+            if (task.on_complete) {
+                task.on_complete();
+            }
+        } catch (...) {
+            const auto eptr = std::current_exception();
+            if (task.on_error) {
+                task.on_error(eptr);
+            }
+        }
+    }
+
     void ThreadPoolInvokeImpl::WorkerLoop() {
 
         ThisThread::thread_id_ = std::this_thread::get_id();
@@ -121,13 +138,7 @@ namespace itflee {
                 tasks_running_.fetch_add(1);
                 running_guard.active = true;
             }
-            if (task.func) {
-                try{
-                    task.func();
-                } catch (...) {
-                    /* avoid throwing from worker thread */
-                }
-            }
+            ExecuteTask(task);
         }
     }
 

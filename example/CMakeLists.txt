@@ -14,9 +14,9 @@
 #     add_subdirectory(websocket_test)
 # endif()
 
-# if(EXISTS "${PROJECT_SOURCE_DIR}/example/thread_test/CMakeLists.txt")
-#     add_subdirectory(thread_test)
-# endif()
+if(EXISTS "${PROJECT_SOURCE_DIR}/example/thread_test/CMakeLists.txt")
+    add_subdirectory(thread_test)
+endif()
 
 if(EXISTS "${PROJECT_SOURCE_DIR}/example/base_test/eventloop_test/CMakeLists.txt")
     add_subdirectory(base_test/eventloop_test)

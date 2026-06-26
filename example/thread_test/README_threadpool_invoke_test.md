@@ -69,7 +69,7 @@
 
 ## 5. priority_order_test
 
-**目的**：验证任务优先级（`InvokeWithPriority`）生效。
+**目的**：验证任务优先级（`InvokeAsync`）生效。
 
 **策略**：
 

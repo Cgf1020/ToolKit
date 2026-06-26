@@ -22,8 +22,8 @@ static void expect(bool cond, const char* msg) {
 static void basic_functionality_test(const std::shared_ptr<ThreadPoolInvokeInterface>& pool) {
     std::cout << "[threadpool test] basic functionality..." << std::endl;
 
-    auto f1 = pool->Invoke([] { return 42; });
-    auto f2 = pool->Invoke([](int x, int y) { return x + y; }, 10, 32);
+    auto f1 = pool->InvokeAsync([] { return 42; });
+    auto f2 = pool->InvokeAsync([](int x, int y) { return x + y; }, 10, 32);
 
     expect(f1.get() == 42, "basic_functionality_test: f1 != 42");
     expect(f2.get() == 42, "basic_functionality_test: f2 != 42");
@@ -46,7 +46,7 @@ static void parallel_accumulate_test(const std::shared_ptr<ThreadPoolInvokeInter
         if (begin >= n) break;
         const std::size_t end = std::min(n, begin + block_size);
         futures.emplace_back(
-            pool->Invoke([begin, end, &data]() {
+            pool->InvokeAsync([begin, end, &data]() {
                 long long sum = 0;
                 for (std::size_t j = begin; j < end; ++j) {
                     sum += data[j];
@@ -92,7 +92,7 @@ static void wait_and_clear_test(const std::shared_ptr<ThreadPoolInvokeInterface>
     std::atomic<int> finished{0};
 
     for (int i = 0; i < 8; ++i) {
-        pool->Invoke([&finished] {
+        pool->InvokeAsync([&finished] {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
             finished.fetch_add(1, std::memory_order_relaxed);
         });
@@ -104,7 +104,7 @@ static void wait_and_clear_test(const std::shared_ptr<ThreadPoolInvokeInterface>
 
     // 再提交一些任务，然后 ClearTask，验证不会死锁且 Wait 能返回
     for (int i = 0; i < 8; ++i) {
-        pool->Invoke([] {
+        pool->InvokeAsync([] {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         });
     }
@@ -125,13 +125,13 @@ static void priority_order_test(const std::shared_ptr<ThreadPoolInvokeInterface>
 
     // 先提交低优先级任务，再提交高优先级任务，观察执行顺序
     for (int i = 0; i < 4; ++i) {
-        pool->InvokeWithPriority(TaskPriority::Low, [&mtx, &order, i] {
+        pool->InvokeAsync(TaskPriority::Low, [&mtx, &order, i] {
             std::lock_guard<std::mutex> lock(mtx);
             order.push_back(100 + i); // 低优先级标记为 100+
         });
     }
     for (int i = 0; i < 4; ++i) {
-        pool->InvokeWithPriority(TaskPriority::High, [&mtx, &order, i] {
+        pool->InvokeAsync(TaskPriority::High, [&mtx, &order, i] {
             std::lock_guard<std::mutex> lock(mtx);
             order.push_back(i); // 高优先级标记为 0..3
         });
@@ -166,7 +166,7 @@ static void pause_unpause_test(const std::shared_ptr<ThreadPoolInvokeInterface>&
     std::atomic<int> counter{0};
 
     for (int i = 0; i < 20; ++i) {
-        pool->Invoke([&counter] {
+        pool->InvokeAsync([&counter] {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
             counter.fetch_add(1, std::memory_order_relaxed);
         });
@@ -196,7 +196,7 @@ static void reset_test(const std::shared_ptr<ThreadPoolInvokeInterface>& pool) {
     // 提交一些任务，确认新配置正常工作
     std::atomic<int> counter{0};
     for (int i = 0; i < 16; ++i) {
-        pool->Invoke([&counter] {
+        pool->InvokeAsync([&counter] {
             counter.fetch_add(1, std::memory_order_relaxed);
         });
     }
@@ -215,7 +215,7 @@ static void deadlock_detection_test(const std::shared_ptr<ThreadPoolInvokeInterf
 
     std::atomic<bool> caught{false};
 
-    auto fut = pool->Invoke([&pool, &caught] {
+    auto fut = pool->InvokeAsync([&pool, &caught] {
         try {
             pool->Wait(); // 在 worker 线程里调用 Wait，应抛 WaitDeadlockError
         } catch (const WaitDeadlockError&) {
@@ -236,7 +236,7 @@ static void deadlock_detection_stress_test(const std::shared_ptr<ThreadPoolInvok
     std::atomic<int> caught_count{0};
 
     for (int r = 0; r < rounds; ++r) {
-        auto fut = pool->Invoke([&pool, &caught_count] {
+        auto fut = pool->InvokeAsync([&pool, &caught_count] {
             try {
                 pool->Wait();
             } catch (const WaitDeadlockError&) {
@@ -257,7 +257,7 @@ static void is_current_test(const std::shared_ptr<ThreadPoolInvokeInterface>& po
     expect(!pool->IsCurrent(), "is_current_test: main thread reported as pool worker");
 
     std::atomic<bool> in_worker{false};
-    auto fut = pool->Invoke([&pool, &in_worker] {
+    auto fut = pool->InvokeAsync([&pool, &in_worker] {
         if (pool->IsCurrent()) {
             in_worker.store(true, std::memory_order_relaxed);
         }
@@ -267,10 +267,102 @@ static void is_current_test(const std::shared_ptr<ThreadPoolInvokeInterface>& po
            "is_current_test: worker thread not reported as pool worker");
 }
 
+static void invoke_with_callback_success_test(const std::shared_ptr<ThreadPoolInvokeInterface>& pool) {
+    std::cout << "[threadpool test] InvokeAsync success..." << std::endl;
+
+    std::atomic<int> callback_result{-1};
+    std::atomic<bool> callback_on_worker{false};
+
+    auto fut = pool->InvokeAsync(
+        [](int a, int b) { return a + b; },
+        [&](int result) {
+            callback_result.store(result, std::memory_order_relaxed);
+            callback_on_worker.store(pool->IsCurrent(), std::memory_order_relaxed);
+        },
+        20, 22
+    );
+
+    expect(fut.get() == 42, "invoke_with_callback_success_test: future result != 42");
+    expect(callback_result.load(std::memory_order_relaxed) == 42,
+           "invoke_with_callback_success_test: callback result != 42");
+    expect(callback_on_worker.load(std::memory_order_relaxed),
+           "invoke_with_callback_success_test: callback not on worker thread");
+}
+
+static void invoke_with_callback_error_test(const std::shared_ptr<ThreadPoolInvokeInterface>& pool) {
+    std::cout << "[threadpool test] InvokeAsync error..." << std::endl;
+
+    std::atomic<bool> error_called{false};
+    std::atomic<bool> error_on_worker{false};
+
+    auto fut = pool->InvokeAsync(
+        []() -> int { throw std::runtime_error("callback test error"); },
+        [](int) {},
+        [&](std::exception_ptr eptr) {
+            error_called.store(true, std::memory_order_relaxed);
+            error_on_worker.store(pool->IsCurrent(), std::memory_order_relaxed);
+            try {
+                std::rethrow_exception(eptr);
+            } catch (const std::runtime_error& e) {
+                expect(std::string(e.what()) == "callback test error",
+                       "invoke_with_callback_error_test: wrong exception message");
+            }
+        }
+    );
+
+    bool future_threw = false;
+    try {
+        (void)fut.get();
+    } catch (const std::runtime_error&) {
+        future_threw = true;
+    }
+    expect(future_threw, "invoke_with_callback_error_test: future did not receive exception");
+    expect(error_called.load(std::memory_order_relaxed),
+           "invoke_with_callback_error_test: error callback not called");
+    expect(error_on_worker.load(std::memory_order_relaxed),
+           "invoke_with_callback_error_test: error callback not on worker thread");
+}
+
+static void submit_task_callback_test(const std::shared_ptr<ThreadPoolInvokeInterface>& pool) {
+    std::cout << "[threadpool test] Submit Task callbacks..." << std::endl;
+
+    std::atomic<bool> complete_called{false};
+    std::atomic<bool> complete_on_worker{false};
+
+    pool->Submit(itflee::Task{
+        [&]() { (void)7; },
+        [&]() {
+            complete_called.store(true, std::memory_order_relaxed);
+            complete_on_worker.store(pool->IsCurrent(), std::memory_order_relaxed);
+        },
+        nullptr,
+        static_cast<itflee::Priority_t>(TaskPriority::Normal)
+    });
+
+    pool->Wait();
+    expect(complete_called.load(std::memory_order_relaxed),
+           "submit_task_callback_test: on_complete not called");
+    expect(complete_on_worker.load(std::memory_order_relaxed),
+           "submit_task_callback_test: on_complete not on worker thread");
+
+    std::atomic<bool> error_called{false};
+    pool->Submit(itflee::Task{
+        []() { throw std::logic_error("submit error"); },
+        nullptr,
+        [&](std::exception_ptr) {
+            error_called.store(true, std::memory_order_relaxed);
+        },
+        static_cast<itflee::Priority_t>(TaskPriority::High)
+    });
+    pool->Wait();
+    expect(error_called.load(std::memory_order_relaxed),
+           "submit_task_callback_test: on_error not called");
+}
+
 static void exception_propagation_test(const std::shared_ptr<ThreadPoolInvokeInterface>& pool) {
     std::cout << "[threadpool test] exception propagation..." << std::endl;
 
-    auto fut = pool->Invoke([]() -> int {
+    auto fut = pool->InvokeAsync([]() -> int {
         throw std::runtime_error("test exception");
     });
 
@@ -290,7 +382,7 @@ static void stress_test(const std::shared_ptr<ThreadPoolInvokeInterface>& pool) 
     std::atomic<int> sum{0};
 
     for (int i = 0; i < tasks; ++i) {
-        pool->Invoke([&sum] {
+        pool->InvokeAsync([&sum] {
             sum.fetch_add(1, std::memory_order_relaxed);
         });
     }
@@ -310,7 +402,7 @@ static void benchmark_test(const std::shared_ptr<ThreadPoolInvokeInterface>& poo
 
         std::atomic<int> counter{0};
         for (int i = 0; i < tasks_per_round; ++i) {
-            pool->Invoke([&counter] {
+            pool->InvokeAsync([&counter] {
                 // 做一点点工作，避免被完全优化掉
                 counter.fetch_add(1, std::memory_order_relaxed);
             });
@@ -345,6 +437,9 @@ int main() {
         deadlock_detection_test(pool);
         deadlock_detection_stress_test(pool);
         is_current_test(pool);
+        invoke_with_callback_success_test(pool);
+        invoke_with_callback_error_test(pool);
+        submit_task_callback_test(pool);
         exception_propagation_test(pool);
         stress_test(pool);
         benchmark_test(pool);
