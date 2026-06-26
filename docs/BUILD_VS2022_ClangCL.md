@@ -40,8 +40,6 @@ cmake --preset vs2022-clangcl
 cmake -S . -B build -A x64 -G "Visual Studio 17 2022" -T ClangCL
 ```
 
-生成 `build/ToolKit.sln`。
-
 ### 编译
 
 ```powershell
@@ -50,13 +48,6 @@ cmake --build build --config Release --target ToolKit
 cmake --build build --config Debug --target event_loop_timer_example
 ```
 
-产出路径示例：
-
-| 产物 | 路径 |
-|------|------|
-| `ToolKit.dll` | `build/bin/Debug/ToolKit.dll` |
-| `event_loop_timer_example.exe` | `build/bin/Debug/event_loop_timer_example.exe` |
-
 ## 二、生成 compile_commands.json（clangd 用）
 
 ```powershell
@@ -64,13 +55,13 @@ cmake --preset ninja-clangcl
 cmake --build build-ninja --target ToolKit
 ```
 
-或使用 build preset：
+或：
 
 ```powershell
 cmake --build --preset ninja-toolkit
 ```
 
-## 三、Ninja + clang-cl 日常命令
+## 三、日常命令速查
 
 ```powershell
 cmake --preset ninja-clangcl
@@ -93,4 +84,4 @@ Remove-Item -Recurse -Force build, build-ninja -ErrorAction SilentlyContinue
 Remove-Item -Force compile_commands.json -ErrorAction SilentlyContinue
 ```
 
-macOS / Linux 见 [BUILD_macos.md](BUILD_macos.md)、[BUILD_linux.md](BUILD_linux.md)。
+其他平台见 [BUILD_macos.md](BUILD_macos.md)、[BUILD_linux.md](BUILD_linux.md)。

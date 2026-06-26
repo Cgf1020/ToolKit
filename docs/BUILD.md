@@ -9,14 +9,11 @@
 ## Windows 快速开始
 
 ```powershell
-# 1. VS 工程（编译）
 cmake --preset vs2022-clangcl
 cmake --build build --config Debug --target ToolKit
 
-# 2. Ninja 工程（clangd 编译数据库）
 cmake --preset ninja-clangcl
 cmake --build build-ninja --target ToolKit
-# 产出：build-ninja/compile_commands.json + 根目录 compile_commands.json
 ```
 
 ## macOS 快速开始
