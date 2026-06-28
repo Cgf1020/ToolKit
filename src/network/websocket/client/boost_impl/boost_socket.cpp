@@ -1,6 +1,7 @@
 #include "boost_socket.h"
 
 #include "root_certificates.hpp"
+#include <boost/version.hpp>
 #include <chrono>
 
 
@@ -26,8 +27,12 @@ namespace itflee {
     {
         destory();
         if (reconnect_timer_) {
+#if BOOST_VERSION >= 108900
+            reconnect_timer_->cancel();
+#else
             boost::system::error_code ec;
             reconnect_timer_->cancel(ec);
+#endif
         }
         work_guard_.reset();
         ioc_.stop();

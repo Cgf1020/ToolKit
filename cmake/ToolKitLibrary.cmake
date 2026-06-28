@@ -214,18 +214,24 @@ if(WIN32)
     target_link_options(ToolKit PRIVATE "/ignore:4099")
 else()
     find_package(Threads REQUIRED)
-    find_package(Boost 1.71 REQUIRED COMPONENTS log system thread)
-    if(Boost_FOUND)
-        message(STATUS "Boost found: ${Boost_VERSION}")
-        message(STATUS "Boost include dirs: ${Boost_INCLUDE_DIRS}")
-        message(STATUS "Boost library dirs: ${Boost_LIBRARY_DIRS}")
-        target_link_libraries(ToolKit PRIVATE Boost::log Boost::system Boost::thread Threads::Threads)
-        target_include_directories(ToolKit PUBLIC ${Boost_INCLUDE_DIRS})
-    else()
-        message(FATAL_ERROR "Boost not found. Please install libboost-all-dev or specific components:\n"
-                            "  sudo apt-get install libboost-all-dev\n"
-                            "Or set BOOST_ROOT environment variable to point to your Boost installation.")
+
+    if(POLICY CMP0167)
+        cmake_policy(SET CMP0167 NEW)
     endif()
+
+    # Boost.System is header-only since 1.89; older releases still ship libboost_system.
+    find_package(Boost 1.71 REQUIRED COMPONENTS log thread)
+    set(_tk_boost_libs Boost::log Boost::thread)
+    if(Boost_VERSION VERSION_LESS "1.89.0")
+        find_package(Boost 1.71 REQUIRED COMPONENTS system)
+        list(APPEND _tk_boost_libs Boost::system)
+    endif()
+
+    message(STATUS "Boost found: ${Boost_VERSION}")
+    message(STATUS "Boost include dirs: ${Boost_INCLUDE_DIRS}")
+    message(STATUS "Boost library dirs: ${Boost_LIBRARY_DIRS}")
+    target_link_libraries(ToolKit PRIVATE ${_tk_boost_libs} Threads::Threads)
+    target_include_directories(ToolKit PUBLIC ${Boost_INCLUDE_DIRS})
 
     linux_find_and_link_libuv(ToolKit)
 

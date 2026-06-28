@@ -23,7 +23,7 @@ ToolKit/
 | 目录 | 说明 |
 |------|------|
 | `build/` | VS 2022 + ClangCL 或 Linux/macOS 单配置构建目录 |
-| `build-ninja/` | Windows Ninja + clang-cl 构建目录（产出 `compile_commands.json`） |
+| `build-ninja/` | Windows / macOS Ninja + LLVM 构建目录（产出 `compile_commands.json`） |
 
 ### `src/` — 实现源码
 
@@ -70,6 +70,7 @@ ToolKit/
 | `ToolKitTarget.cmake` | 输出目录、RPATH 等辅助函数 |
 | `ToolKitLibrary.cmake` | 定义 `ToolKit` 主库：源文件、依赖、链接 |
 | `toolchains/clangcl-db.cmake` | Windows Ninja 专用 clang-cl 工具链 |
+| `toolchains/llvm-macos.cmake` | macOS Ninja 专用 LLVM clang++ 工具链 |
 
 ### `docs/` — 文档
 
@@ -77,7 +78,7 @@ ToolKit/
 |------|------|
 | `BUILD.md` | 构建总览 |
 | `BUILD_VS2022_ClangCL.md` | Windows 双目录详细说明 |
-| `BUILD_macos.md` | macOS Xcode 构建 |
+| `BUILD_macos.md` | macOS Ninja + LLVM 构建 |
 | `BUILD_linux.md` | Linux Ninja 构建 |
 
 ### `third_party_call/` — 第三方库试验
@@ -120,8 +121,8 @@ cmake --build build-ninja --target ToolKit
 ### macOS
 
 ```bash
-cmake --preset xcode-macos
-cmake --build build --config Debug
+cmake --preset ninja-macos
+cmake --build build-ninja --target ToolKit
 ```
 
 ### Linux

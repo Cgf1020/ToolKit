@@ -3,6 +3,7 @@
 #include <sstream>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
+#include <boost/version.hpp>
 
 namespace itflee {
 
@@ -206,8 +207,12 @@ void TcpConnectionImpl::OnHeartbeatTick(const boost::system::error_code& ec) {
 
 void TcpConnectionImpl::DisableHeartbeatInLoop() noexcept {
     heartbeat_enabled_ = false;
+#if BOOST_VERSION >= 108900
+    heartbeat_timer_.cancel();
+#else
     boost::system::error_code ec;
     heartbeat_timer_.cancel(ec);
+#endif
 }
 
 void TcpConnectionImpl::HandleError(ConnectionState reason) {

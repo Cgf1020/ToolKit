@@ -10,6 +10,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/steady_timer.hpp>
+#include <boost/version.hpp>
 
 namespace itflee {
 
@@ -68,8 +69,12 @@ public:
         reconnect_retry_count_ = 0;
 
         if (reconnect_timer_) {
+#if BOOST_VERSION >= 108900
+            reconnect_timer_->cancel();
+#else
             boost::system::error_code ec;
             reconnect_timer_->cancel(ec);
+#endif
         }
 
         if (conn_) {
@@ -154,8 +159,12 @@ private:
             *socket, endpoints,
             [self, socket, deadline](boost::system::error_code ec,
                                      const tcp::endpoint& /*ep*/) {
+#if BOOST_VERSION >= 108900
+                deadline->cancel();
+#else
                 boost::system::error_code cancel_ec;
                 deadline->cancel(cancel_ec);
+#endif
                 if (!ec) {
                     self->OnConnected(std::move(*socket));
                 } else {

@@ -48,9 +48,29 @@
       }
     },
     {
+      "name": "ninja-macos",
+      "displayName": "Ninja + LLVM (macOS)",
+      "description": "LLVM clang++ + Ninja (+ lld when available); exports compile_commands.json",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-ninja",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/llvm-macos.cmake",
+        "CMAKE_TRY_COMPILE_TARGET_TYPE": "STATIC_LIBRARY",
+        "ENABLE_WEBSOCKET": "OFF",
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
       "name": "xcode-macos",
       "displayName": "Xcode (macOS)",
-      "description": "macOS multi-config Xcode build",
+      "description": "macOS multi-config Xcode build (requires full Xcode.app)",
       "generator": "Xcode",
       "binaryDir": "${sourceDir}/build",
       "condition": {
@@ -92,8 +112,8 @@
     {
       "name": "macos-debug",
       "displayName": "macOS Debug",
-      "configurePreset": "xcode-macos",
-      "configuration": "Debug"
+      "configurePreset": "ninja-macos",
+      "targets": ["ToolKit"]
     }
   ]
 }

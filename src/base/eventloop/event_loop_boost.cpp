@@ -226,8 +226,12 @@ namespace itflee {
             }
         });
         return std::shared_ptr<void>(timer.get(), [timer](void*) noexcept {
+#if BOOST_VERSION >= 108900
+            timer->cancel();
+#else
             boost::system::error_code cancel_ec;
             timer->cancel(cancel_ec);
+#endif
         });
     }
 
@@ -299,8 +303,12 @@ namespace itflee {
 #endif
         state->arm(state);
         return std::shared_ptr<void>(state.get(), [state](void*) noexcept {
+#if BOOST_VERSION >= 108900
+            state->timer.cancel();
+#else
             boost::system::error_code cancel_ec;
             state->timer.cancel(cancel_ec);
+#endif
         });
     }
 
