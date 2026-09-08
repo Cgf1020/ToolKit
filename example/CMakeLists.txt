@@ -22,6 +22,10 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/example/base_test/eventloop_test/CMakeLists.txt
     add_subdirectory(base_test/eventloop_test)
 endif()
 
+if(EXISTS "${PROJECT_SOURCE_DIR}/example/base_test/logger_test/CMakeLists.txt")
+    add_subdirectory(base_test/logger_test)
+endif()
+
 if(EXISTS "${PROJECT_SOURCE_DIR}/example/timer/CMakeLists.txt")
     add_subdirectory(timer)
 endif()

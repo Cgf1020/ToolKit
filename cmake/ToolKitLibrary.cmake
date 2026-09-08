@@ -1,8 +1,9 @@
 #----------------------------- Source files -----------------------------
 file(GLOB_RECURSE SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/base/json/json_helper.cpp
-    ${PROJECT_SOURCE_DIR}/src/base/log/log_helper.cpp
-    ${PROJECT_SOURCE_DIR}/src/base/log/log_impl.cpp
+    ${PROJECT_SOURCE_DIR}/src/base/log/logger.cpp
+    ${PROJECT_SOURCE_DIR}/src/base/log/spdlog/spdlog_backend.cpp
+    ${PROJECT_SOURCE_DIR}/src/base/log/boost/boost_log_backend.cpp
     ${PROJECT_SOURCE_DIR}/src/base/utils.cpp
     ${PROJECT_SOURCE_DIR}/src/config/*.c
     ${PROJECT_SOURCE_DIR}/src/config/*.cpp
@@ -180,8 +181,8 @@ if(WIN32)
     )
 
     target_link_libraries(ToolKit PRIVATE
-        "$<$<CONFIG:Debug>:libboost_log-vc143-mt-gd-x64-1_82;libboost_log_setup-vc143-mt-gd-x64-1_82;libboost_system-vc143-mt-gd-x64-1_82;libboost_thread-vc143-mt-gd-x64-1_82;libboost_filesystem-vc143-mt-gd-x64-1_82;libboost_atomic-vc143-mt-gd-x64-1_82;libboost_chrono-vc143-mt-gd-x64-1_82>"
-        "$<$<CONFIG:Release>:libboost_log-vc143-mt-x64-1_82;libboost_log_setup-vc143-mt-x64-1_82;libboost_system-vc143-mt-x64-1_82;libboost_thread-vc143-mt-x64-1_82;libboost_filesystem-vc143-mt-x64-1_82;libboost_atomic-vc143-mt-x64-1_82;libboost_chrono-vc143-mt-x64-1_82>"
+        "$<$<CONFIG:Debug>:libboost_log-vc143-mt-gd-x64-1_82;libboost_log_setup-vc143-mt-gd-x64-1_82;libboost_system-vc143-mt-gd-x64-1_82;libboost_thread-vc143-mt-gd-x64-1_82;libboost_filesystem-vc143-mt-gd-x64-1_82;libboost_date_time-vc143-mt-gd-x64-1_82;libboost_chrono-vc143-mt-gd-x64-1_82;libboost_atomic-vc143-mt-gd-x64-1_82;libboost_regex-vc143-mt-gd-x64-1_82>"
+        "$<$<CONFIG:Release>:libboost_log-vc143-mt-x64-1_82;libboost_log_setup-vc143-mt-x64-1_82;libboost_system-vc143-mt-x64-1_82;libboost_thread-vc143-mt-x64-1_82;libboost_filesystem-vc143-mt-x64-1_82;libboost_date_time-vc143-mt-x64-1_82;libboost_chrono-vc143-mt-x64-1_82;libboost_atomic-vc143-mt-x64-1_82;libboost_regex-vc143-mt-x64-1_82>"
     )
 
     target_include_directories(ToolKit PUBLIC ${THIRD_PARTY_DIR}/libuv/include)
@@ -220,8 +221,8 @@ else()
     endif()
 
     # Boost.System is header-only since 1.89; older releases still ship libboost_system.
-    find_package(Boost 1.71 REQUIRED COMPONENTS log thread)
-    set(_tk_boost_libs Boost::log Boost::thread)
+    find_package(Boost 1.71 REQUIRED COMPONENTS log log_setup filesystem thread)
+    set(_tk_boost_libs Boost::log Boost::log_setup Boost::filesystem Boost::thread)
     if(Boost_VERSION VERSION_LESS "1.89.0")
         find_package(Boost 1.71 REQUIRED COMPONENTS system)
         list(APPEND _tk_boost_libs Boost::system)
@@ -250,6 +251,18 @@ else()
         endif()
     endif()
 endif()
+
+# spdlog（header-only）：实现走完整 include；公开头仅通过 spdlog/fmt 使用 {} 格式化
+if(NOT DEFINED THIRD_PARTY_DIR)
+    set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/../third_party")
+endif()
+set(SPDLOG_INCLUDE_DIR "${THIRD_PARTY_DIR}/spdlog/include")
+if(NOT EXISTS "${SPDLOG_INCLUDE_DIR}/spdlog/spdlog.h")
+    message(FATAL_ERROR "spdlog not found at ${SPDLOG_INCLUDE_DIR}")
+endif()
+target_include_directories(ToolKit PRIVATE ${SPDLOG_INCLUDE_DIR})
+target_include_directories(ToolKit PUBLIC ${SPDLOG_INCLUDE_DIR}/spdlog/fmt)
+message(STATUS "spdlog include: ${SPDLOG_INCLUDE_DIR}")
 
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")

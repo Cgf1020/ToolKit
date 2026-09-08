@@ -1,148 +1,284 @@
 # ToolKit
 
-跨平台 C++ 工具库，提供日志、JSON、配置、定时器、事件循环、TCP/UDP 网络等模块。
+跨平台 C++17 基础工具库，封装日志、JSON、配置、定时器、事件循环、网络等基础设施，供上层业务直接链接使用。
+
+## 提供什么
+
+| 模块      | 路径（对外头文件）                 | 说明                                                               |
+| --------- | ---------------------------------- | ------------------------------------------------------------------ |
+| 事件循环  | `include/base/eventloop/`        | 基于 Boost.Asio 的事件循环、定时调度、信号等                       |
+| 日志      | `include/base/log/`              | `Logger` 门面：按模块分文件、异步、滚动；默认 spdlog，可切 Boost.Log |
+| JSON      | `include/base/json/`             | 自研 JSON 辅助（实践中可用）；也可选用`third_party_call/jsoncpp` |
+| 配置      | `include/base/config/`           | INI 配置读写                                                       |
+| 队列      | `include/base/queue/`            | 缓存队列、SPSC、同步队列模板等                                     |
+| 线程池    | `include/threadpool/`            | 单线程/线程池异步调用接口                                          |
+| 定时器    | `include/time/`                  | 标准定时器、事件循环定时器、libuv 定时器等                         |
+| TCP / UDP | `include/network/tcp/`、`udp/` | 网络抽象（**自研 TCP 已有较多问题，新代码建议用 libhv**）    |
+| WebSocket | `include/network/websocket/`     | 可选模块，默认关闭，依赖 Boost.Beast + OpenSSL                     |
+
+仓库内 `third_party_call/` 还预置了 **libhv**、**jsoncpp**、**BS::thread_pool** 等第三方能力，可单独编译链接；网络相关新需求优先考虑 libhv（TCP/UDP/HTTP/WebSocket/定时器等）。
 
 ## 目录结构
 
-```
+```text
 ToolKit/
-├── src/                  # 库实现源码（.cpp / 私有头文件）
-├── include/              # 对外公开头文件（API）
-├── example/              # 示例与测试程序（链接 ToolKit 库）
-├── cmake/                # CMake 构建模块（选项、主库、工具链等）
-├── docs/                 # 构建与测试文档
-├── third_party_call/     # 第三方库独立试验（不参与主工程编译）
-├── beak/                 # 历史/备份代码（旧实现与接口草稿，仅供参考）
-├── CMakeLists.txt        # 根 CMake 入口
-├── CMakePresets.json     # 跨平台 CMake Preset（Windows / macOS / Linux）
-└── ToolKit.pc.in         # pkg-config 模板（安装流程尚未启用）
+├── include/           # 对外头文件
+├── src/               # 库实现
+├── example/           # 示例与测试程序
+├── cmake/             # CMake 构建模块（选项、主库、工具链等）
+├── docs/              # 构建与测试文档
+├── third_party_call/  # 第三方库独立试验（不参与主工程编译）
+├── beak/              # 历史/备份代码（不参与主库构建）
+├── CMakeLists.txt
+├── CMakePresets.json
+└── README.md
 ```
 
-构建产物目录（已 `.gitignore` 忽略）：
+产物默认输出到构建目录下的 `bin/`（多配置生成器还有 `Debug` / `Release` 子目录）。构建目录已 `.gitignore`：
 
-| 目录 | 说明 |
-|------|------|
-| `build/` | VS 2022 + ClangCL 或 Linux/macOS 单配置构建目录 |
-| `build-ninja/` | Windows / macOS Ninja + LLVM 构建目录（产出 `compile_commands.json`） |
-
-### `src/` — 实现源码
-
-各功能模块的实现代码，按子目录划分：
-
-| 子目录 | 内容 |
-|--------|------|
-| `base/` | 日志、JSON、事件循环、工具函数 |
-| `config/` | INI 配置（含 SimpleIni） |
-| `time/` | 定时器（标准定时器、libuv 定时器、事件循环定时器） |
-| `threadpool/` | 线程池 |
-| `network/` | TCP / UDP / WebSocket（可选） |
-
-私有头文件通常放在对应 `src/` 子目录内；对外 API 在 `include/`。
-
-### `include/` — 公开头文件
-
-供外部或 `example/` 引用的头文件，目录结构与 `src/` 大致对应：
-
-- `base/` — 日志、JSON、队列、配置、事件循环
-- `time/` — 定时器相关
-- `threadpool/` — 线程池接口
-- `network/` — TCP / UDP / WebSocket 接口
-
-### `example/` — 示例程序
-
-通过根 `CMakeLists.txt` 的 `add_subdirectory(example)` 接入主构建。当前常用子项：
-
-| 子目录 | 说明 |
-|--------|------|
-| `base_test/eventloop_test/` | EventLoop 测试 |
-| `timer/` | 事件循环定时器示例 |
-| `network_test/` | TCP / UDP 网络测试 |
-| `jsontest/`、`thread_test/`、`websocket_test/` 等 | 存在但未默认接入 CMake |
-
-编译后输出在 `build/bin/Debug`（或 `Release`）下。
-
-### `cmake/` — 构建脚本模块
-
-| 文件 | 作用 |
-|------|------|
-| `ToolKitOptions.cmake` | 全局选项：构建类型、WebSocket 开关、编译警告 |
-| `ToolKitCompileCommands.cmake` | 生成并同步 `compile_commands.json`（clangd） |
-| `ToolKitTarget.cmake` | 输出目录、RPATH 等辅助函数 |
-| `ToolKitLibrary.cmake` | 定义 `ToolKit` 主库：源文件、依赖、链接 |
-| `toolchains/clangcl-db.cmake` | Windows Ninja 专用 clang-cl 工具链 |
-| `toolchains/llvm-macos.cmake` | macOS Ninja 专用 LLVM clang++ 工具链 |
-
-### `docs/` — 文档
-
-| 文件 | 内容 |
-|------|------|
-| `BUILD.md` | 构建总览 |
-| `BUILD_VS2022_ClangCL.md` | Windows 双目录详细说明 |
-| `BUILD_macos.md` | macOS Ninja + LLVM 构建 |
-| `BUILD_linux.md` | Linux Ninja 构建 |
-
-### `third_party_call/` — 第三方库试验
-
-**独立工程**，不在主 `CMakeLists.txt` 中编译。用于单独验证 jsoncpp、libhv、thread-pool 等第三方库的集成方式，需在该目录下自行 `cmake` 构建。
-
-### `beak/` — 历史备份
-
-旧版接口草稿（`api-b/`）与早期实现（`-----/`），不参与当前主库构建，仅供查阅对比。
-
-### 其他根目录文件
-
-| 文件 | 说明 |
-|------|------|
-| `AGENTS.md` / `CLAUDE.md` | GitNexus 为 AI 助手自动生成的代码分析规范 |
-| `compile_commands.json` | Ninja 构建后生成，供 clangd 使用（可忽略提交） |
-| `.vscode/` | VS Code / Cursor 编辑器配置 |
+| 目录             | 说明                                                              |
+| ---------------- | ----------------------------------------------------------------- |
+| `build/`       | VS 2022 + ClangCL、Linux Ninja、macOS Xcode                       |
+| `build-ninja/` | Windows / macOS Ninja + LLVM（产出 `compile_commands.json`）      |
 
 ## 依赖
 
-- C++17
-- CMake 3.20+
-- Windows：预编译第三方库位于 `../third_party`（Boost 1.82、libuv 等）
-- Linux / macOS：系统包管理器安装 Boost、libuv
+- **CMake** ≥ 3.20，**C++17**
+- **Boost**（system / thread / log 等；Windows 使用仓库旁 `third_party/boost_1_82_0`）
+- **spdlog**（header-only，路径 `../third_party/spdlog`）
+- **libuv**（Windows 使用 `../third_party/libuv`；Linux / macOS 需安装开发包）
+- 启用 WebSocket 时额外需要 **OpenSSL**
 
-## 快速开始
+Windows / 本机预编译库路径约定为相对本仓库的 `../third_party`（即与 `ToolKit` 同级的 `third_party` 目录）。
 
-### Windows
+## 构建
+
+默认生成**动态库**（`BUILD_SHARED_LIBS=ON`），WebSocket 默认关闭（`ENABLE_WEBSOCKET=OFF`）。Windows / macOS 也可用 `CMakePresets.json`。
+
+### Windows（VS 2022 + ClangCL）
+
+本仓库 Windows 默认走 **ClangCL**，不是 MSVC。双目录：`build/` 给 Visual Studio 编译调试；`build-ninja/` 给 clangd（VS 生成器不产出 `compile_commands.json`）。多配置生成器须用 `--config` 选择 Debug / Release。
 
 ```powershell
 # VS 工程（编译 / 调试）
 cmake --preset vs2022-clangcl
-cmake --build build --config Debug --target ToolKit
+cmake --build build --config Release
+# 或 Debug
+cmake --build build --config Debug
 
-# Ninja + clangd（compile_commands.json）
+# Ninja + clangd
 cmake --preset ninja-clangcl
 cmake --build build-ninja --target ToolKit
 ```
 
-### macOS
+等价手动配置：
 
-```bash
-cmake --preset ninja-macos
-cmake --build build-ninja --target ToolKit
+```powershell
+cmake -S . -B build -A x64 -G "Visual Studio 17 2022" -T ClangCL -DENABLE_WEBSOCKET=OFF
+cmake --build build --config Release
 ```
 
-### Linux
+### Linux（GCC / Clang）
+
+Linux 为单配置生成器，须设置 `CMAKE_BUILD_TYPE`（`Debug` 或 `Release`）。
+编译器二选一：**GCC**（默认多为 `g++`）或 **Clang**（`clang++`）。
+CMake 负责生成构建文件；后端可用 Ninja 或 Makefile（`-G Ninja` / 默认 Unix Makefiles），与选哪个编译器无关。
+
+换编译器或 `CMAKE_BUILD_TYPE` 时，请换一个构建目录，或删掉该目录下的 `CMakeCache.txt` 与 `CMakeFiles` 后再配置。
+
+系统依赖示例：`sudo apt-get install cmake ninja-build g++ clang libboost-all-dev libuv1-dev`。spdlog 取自 `../third_party/spdlog`。
+
+#### GCC
+
+```bash
+cmake -S . -B build-gcc \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_COMPILER=g++ \
+  -DENABLE_WEBSOCKET=OFF
+cmake --build build-gcc -j$(nproc)
+```
+
+使用 Ninja（需已安装 `ninja`，增量通常更快）：
+
+```bash
+cmake -S . -B build-gcc-ninja \
+  -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_COMPILER=g++ \
+  -DENABLE_WEBSOCKET=OFF
+cmake --build build-gcc-ninja -j$(nproc)
+```
+
+#### Clang
+
+默认使用 Unix Makefiles：
+
+```bash
+cmake -S . -B build-clang \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DENABLE_WEBSOCKET=OFF
+cmake --build build-clang -j$(nproc)
+```
+
+使用 Ninja：
+
+```bash
+cmake -S . -B build-clang-ninja \
+  -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DENABLE_WEBSOCKET=OFF
+cmake --build build-clang-ninja -j$(nproc)
+```
+
+产物在对应构建目录的 `bin/Release/` 或 `bin/Debug/`（随 `CMAKE_BUILD_TYPE`）。
+
+也可用仓库 preset（默认系统编译器 + Ninja + **Debug**，产物在 `build/`）：
 
 ```bash
 cmake --preset ninja-linux
 cmake --build build --target ToolKit -j$(nproc)
 ```
 
-## 详细构建文档
+### macOS（Ninja / Xcode）
 
-见 [docs/BUILD.md](docs/BUILD.md)。
+推荐 Ninja + LLVM（产出 `compile_commands.json`）：
 
-| 平台 | 文档 |
-|------|------|
-| Windows | [docs/BUILD_VS2022_ClangCL.md](docs/BUILD_VS2022_ClangCL.md) |
-| macOS | [docs/BUILD_macos.md](docs/BUILD_macos.md) |
-| Linux | [docs/BUILD_linux.md](docs/BUILD_linux.md) |
+```bash
+cmake --preset ninja-macos
+cmake --build build-ninja --target ToolKit
+```
 
-## 开发备注
+完整 Xcode.app 可用：
 
-- `src/network/tcp` 旧版 TCP 实现不再维护，后续使用 libhv 事件循环方案
-- JSON、日志模块在项目中可正常使用；其余模块仍在实践中验证
+```bash
+cmake --preset xcode-macos
+cmake --build build --config Debug
+```
+
+系统依赖示例：`brew install boost libuv`。spdlog 仍取自 `../third_party/spdlog`。
+
+### 启用 WebSocket
+
+Windows：
+
+```powershell
+cmake -S . -B build -DENABLE_WEBSOCKET=ON
+cmake --build build --config Release
+```
+
+Linux：在 GCC / Clang 的配置命令中加 `-DENABLE_WEBSOCKET=ON` 即可。
+
+若缓存里已有旧选项，需删除对应构建目录下的 `CMakeCache.txt` 后再配置，或用命令行 `-D` 覆盖。
+
+### 只编某个示例
+
+```powershell
+# Windows
+cmake --build build --target eventloop_test --config Debug
+cmake --build build --target logger_test --config Debug
+cmake --build build --target tcp_network_test --config Release
+```
+
+```bash
+# Linux（以 GCC 构建目录为例）
+cmake --build build-gcc --target eventloop_test
+cmake --build build-gcc --target logger_test
+```
+
+## 使用（链接本库）
+
+1. 包含头文件：把 `ToolKit/include` 加入 include 路径。
+2. 链接目标库：`ToolKit`（动态库时注意运行时能找到同目录或 PATH / `LD_LIBRARY_PATH` 中的 DLL/so）。
+3. CMake 侧若作为子工程 `add_subdirectory(ToolKit)`，可直接：
+
+```cmake
+target_link_libraries(your_app PRIVATE ToolKit)
+```
+
+日志请 `#include "base/log/logger.h"`，使用 `LOG_INFO` / `Logger::init`（`{}` 格式化）。示例程序已按此方式链接；可参考 `example/` 下各 `CMakeLists.txt`。
+
+## 运行示例
+
+编译后可执行文件一般在：
+
+| 平台 / 配置                       | 路径                               |
+| --------------------------------- | ---------------------------------- |
+| Windows VS Debug                  | `build/bin/Debug/`               |
+| Windows VS Release                | `build/bin/Release/`             |
+| Windows Ninja（preset 为 Debug）    | `build-ninja/bin/`               |
+| Linux GCC Release                 | `build-gcc/bin/Release/`         |
+| Linux GCC + Ninja Release         | `build-gcc-ninja/bin/Release/`   |
+| Linux Clang Release               | `build-clang/bin/Release/`       |
+| Linux Clang + Ninja Release       | `build-clang-ninja/bin/Release/` |
+| Linux preset `ninja-linux` Debug | `build/bin/Debug/`               |
+| macOS Ninja（preset 为 Debug）      | `build-ninja/bin/`               |
+| macOS Xcode Debug                 | `build/bin/Debug/`               |
+
+示例：
+
+```powershell
+# Windows
+.\build\bin\Debug\eventloop_test.exe
+.\build\bin\Debug\logger_test.exe
+.\build\bin\Release\tcp_network_test.exe
+```
+
+```bash
+# Linux（CMAKE_BUILD_TYPE=Release 时）
+./build-gcc/bin/Release/eventloop_test
+./build-gcc/bin/Release/logger_test
+./build-clang/bin/Release/tcp_network_test
+./build-clang-ninja/bin/Release/eventloop_test
+```
+
+部分用例支持环境变量调参（如事件循环测试的延迟容差、是否跳过信号等），详见各示例旁的说明文档。
+
+## 示例一览
+
+当前 **CMake 默认会编译** 的目录（见 `example/CMakeLists.txt`）：
+
+| 目标 / 程序                               | 目录                                  | 说明                                                                     |
+| ----------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------ |
+| `eventloop_test`                        | `example/base_test/eventloop_test/` | 事件循环完整回归（Post/Dispatch、定时、信号、取消、生命周期等）          |
+| `eventloop_simple_test`                 | 同上                                  | 更精简的事件循环演示                                                     |
+| `logger_test`                           | `example/base_test/logger_test/`    | Logger 模块分流、滚动、异步刷盘；spdlog / Boost.Log 对比                 |
+| `threadpool_invoke_full_test`           | `example/thread_test/`              | 线程池 `ThreadPoolInvoke` 全量测试（见同目录 README）                  |
+| `event_loop_timer_example`              | `example/timer/`                    | 事件循环定时器示例                                                       |
+| `tcp_network_test`                      | `example/network_test/`             | TCP 功能 / 并发 / 生命周期 / 压力等（详见同目录 `tcp_network_test.md`） |
+| `udp_network_test`                      | 同上                                  | UDP 测试                                                                 |
+| `tcp_client_test` / `tcp_server_test` | `example/network_test/tcp_test/`    | 独立 TCP 客户端 / 服务端小程序                                           |
+
+仓库中还有、但 **默认未加入构建** 的示例（取消 `example/CMakeLists.txt` 中对应注释即可启用）：
+
+| 目录                        | 说明                                              |
+| --------------------------- | ------------------------------------------------- |
+| `example/jsontest/`       | JSON 辅助测试                                     |
+| `example/websocket_test/` | WebSocket 客户端示例（需 `ENABLE_WEBSOCKET=ON`） |
+| `example/qttest/`         | Qt 相关试验工程（独立 vcxproj）                   |
+
+`third_party_call/libhv/example/` 下另有 libhv 的 TCP、定时器、队列线程池等示例，需单独按其 CMake 编译。
+
+## 模块成熟度（实践备注）
+
+1. **自研 TCP server/client**：问题较多，后续网络事件循环相关能力优先使用 **libhv**。
+2. **JSON**：自研封装在业务中可用；第三方 jsoncpp 也可链接，性能对比尚未系统评测。
+3. **日志**：使用 `itflee::Logger` / `LOG_INFO`；旧流式宏 `LOG_I` 已移除。
+4. **其余模块**：仍需在实际场景中继续验证。
+
+更系统的测试关注点（生命周期、竞态、压力等）见 `docs/测试文档指导说明.md`。
+
+## 相关文档
+
+- [docs/BUILD.md](docs/BUILD.md) — 构建总览
+- [docs/BUILD_VS2022_ClangCL.md](docs/BUILD_VS2022_ClangCL.md) — Windows 双目录详细说明
+- [docs/BUILD_macos.md](docs/BUILD_macos.md) — macOS Xcode 构建
+- [docs/BUILD_linux.md](docs/BUILD_linux.md) — Linux Ninja 构建
+- [docs/测试文档指导说明.md](docs/测试文档指导说明.md) — 通用模块测试指导
+- `example/base_test/eventloop_test/eventloop测试.md` — 事件循环用例说明
+- `example/base_test/logger_test/logger_test_report.md` — Logger 功能与性能报告
+- `example/network_test/tcp_network_test.md` — TCP 测试说明
+- `example/thread_test/README_threadpool_invoke_test.md` — 线程池测试说明
+- `src/base/log/spdlog/README.md` — spdlog 后端说明
+- `third_party_call/readme.txt` — jsoncpp / libhv 使用备忘
