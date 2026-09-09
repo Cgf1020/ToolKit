@@ -122,12 +122,12 @@ cmake --build build-ninja --target logger_test
 
 ## 产物路径
 
-| 配置                                    | 路径                                         |
-| --------------------------------------- | -------------------------------------------- |
-| ClangCL + Visual Studio Debug / Release | `build/bin/Debug/`、`build/bin/Release/` |
-| ClangCL + Ninja Debug                   | `build-ninja/bin/Debug/`                   |
+| 配置                                    | 路径                                                   |
+| --------------------------------------- | ------------------------------------------------------ |
+| ClangCL + Visual Studio Debug / Release | `build/bin/Debug/`、`build/bin/Release/`           |
+| ClangCL + Ninja Debug                   | `build-ninja/bin/Debug/`                             |
 | MSVC + Visual Studio Debug / Release    | `build-msvc/bin/Debug/`、`build-msvc/bin/Release/` |
-| MSVC + Ninja Debug                      | `build-msvc-ninja/bin/Debug/`            |
+| MSVC + Ninja Debug                      | `build-msvc-ninja/bin/Debug/`                        |
 
 ```powershell
 .\build\bin\Debug\eventloop_test.exe
