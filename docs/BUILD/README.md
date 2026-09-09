@@ -6,7 +6,7 @@
 | 平台 | 文档 | 推荐 preset | 产物目录 |
 |------|------|-------------|----------|
 | Windows | [windows.md](windows.md) | `vs2022-clangcl` / `ninja-clangcl`（ClangCL）；`vs2022-msvc` / `ninja-msvc`（MSVC） | `build/`、`build-ninja/`；`build-msvc/`、`build-msvc-ninja/` |
-| Linux | [linux.md](linux.md) | `ninja-linux` | `build/` |
+| Linux | [linux.md](linux.md) | Debug：`ninja-linux` / `makefile-gcc` / `ninja-gcc` / `makefile-clang` / `ninja-clang`；Release：同名加 `-release` | Debug：`build/`、`build-gcc/` 等；Release：`build-release/`、`build-gcc-release/` 等 |
 | macOS | [macos.md](macos.md) | `ninja-macos` | `build-ninja/` |
 
-各平台文档内按**编译器**分节，其下再写 **Ninja** 与其它生成器（Visual Studio / Makefile / Xcode）。GCC 等无 preset 的组合须使用独立目录（如 `build-gcc`），不要与已有 preset 的产物目录混用。
+各平台文档内按**编译器**分节，其下再写 **Ninja** 与其它生成器（Visual Studio / Makefile / Xcode）。换编译器、生成器或 `CMAKE_BUILD_TYPE` 时请换构建目录，不要与已有 preset 的产物目录混用。

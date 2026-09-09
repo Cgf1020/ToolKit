@@ -1,12 +1,17 @@
 # Build directories
 build/
+build-release/
 build-ninja/
 build-msvc/
 build-msvc-ninja/
 build-gcc/
+build-gcc-release/
 build-gcc-ninja/
+build-gcc-ninja-release/
 build-clang/
+build-clang-release/
 build-clang-ninja/
+build-clang-ninja-release/
 out/
 cmake-build-*/
 compile_commands.json

@@ -57,7 +57,7 @@
     {
       "name": "ninja-linux",
       "displayName": "Ninja (Linux)",
-      "description": "Linux single-config Ninja build",
+      "description": "Linux system compiler + Ninja; Debug",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build",
       "condition": {
@@ -70,6 +70,132 @@
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "ENABLE_WEBSOCKET": "OFF",
         "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "makefile-gcc",
+      "displayName": "Unix Makefiles + GCC",
+      "description": "Linux GCC g++ + Unix Makefiles; Debug",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-gcc",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "ENABLE_WEBSOCKET": "OFF",
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "ninja-gcc",
+      "displayName": "Ninja + GCC",
+      "description": "Linux GCC g++ + Ninja; Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-gcc-ninja",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "ENABLE_WEBSOCKET": "OFF",
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "makefile-clang",
+      "displayName": "Unix Makefiles + Clang",
+      "description": "Linux Clang clang++ + Unix Makefiles; Debug",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-clang",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "ENABLE_WEBSOCKET": "OFF",
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "ninja-clang",
+      "displayName": "Ninja + Clang",
+      "description": "Linux Clang clang++ + Ninja; Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-clang-ninja",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "ENABLE_WEBSOCKET": "OFF",
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "ninja-linux-release",
+      "inherits": "ninja-linux",
+      "displayName": "Ninja (Linux) Release",
+      "description": "Linux system compiler + Ninja; Release",
+      "binaryDir": "${sourceDir}/build-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "makefile-gcc-release",
+      "inherits": "makefile-gcc",
+      "displayName": "Unix Makefiles + GCC Release",
+      "description": "Linux GCC g++ + Unix Makefiles; Release",
+      "binaryDir": "${sourceDir}/build-gcc-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "ninja-gcc-release",
+      "inherits": "ninja-gcc",
+      "displayName": "Ninja + GCC Release",
+      "description": "Linux GCC g++ + Ninja; Release",
+      "binaryDir": "${sourceDir}/build-gcc-ninja-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "makefile-clang-release",
+      "inherits": "makefile-clang",
+      "displayName": "Unix Makefiles + Clang Release",
+      "description": "Linux Clang clang++ + Unix Makefiles; Release",
+      "binaryDir": "${sourceDir}/build-clang-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "ninja-clang-release",
+      "inherits": "ninja-clang",
+      "displayName": "Ninja + Clang Release",
+      "description": "Linux Clang clang++ + Ninja; Release",
+      "binaryDir": "${sourceDir}/build-clang-ninja-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
@@ -150,6 +276,60 @@
       "name": "linux-debug",
       "displayName": "Linux Debug",
       "configurePreset": "ninja-linux",
+      "targets": ["ToolKit"]
+    },
+    {
+      "name": "linux-gcc",
+      "displayName": "Linux GCC Debug",
+      "configurePreset": "makefile-gcc",
+      "targets": ["ToolKit"]
+    },
+    {
+      "name": "linux-gcc-ninja",
+      "displayName": "Linux GCC Ninja Debug",
+      "configurePreset": "ninja-gcc",
+      "targets": ["ToolKit"]
+    },
+    {
+      "name": "linux-clang",
+      "displayName": "Linux Clang Debug",
+      "configurePreset": "makefile-clang",
+      "targets": ["ToolKit"]
+    },
+    {
+      "name": "linux-clang-ninja",
+      "displayName": "Linux Clang Ninja Debug",
+      "configurePreset": "ninja-clang",
+      "targets": ["ToolKit"]
+    },
+    {
+      "name": "linux-release",
+      "displayName": "Linux Release",
+      "configurePreset": "ninja-linux-release",
+      "targets": ["ToolKit"]
+    },
+    {
+      "name": "linux-gcc-release",
+      "displayName": "Linux GCC Release",
+      "configurePreset": "makefile-gcc-release",
+      "targets": ["ToolKit"]
+    },
+    {
+      "name": "linux-gcc-ninja-release",
+      "displayName": "Linux GCC Ninja Release",
+      "configurePreset": "ninja-gcc-release",
+      "targets": ["ToolKit"]
+    },
+    {
+      "name": "linux-clang-release",
+      "displayName": "Linux Clang Release",
+      "configurePreset": "makefile-clang-release",
+      "targets": ["ToolKit"]
+    },
+    {
+      "name": "linux-clang-ninja-release",
+      "displayName": "Linux Clang Ninja Release",
+      "configurePreset": "ninja-clang-release",
       "targets": ["ToolKit"]
     },
     {
