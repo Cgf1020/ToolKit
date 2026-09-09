@@ -26,6 +26,7 @@ ToolKit/
 ├── src/               # 库实现
 ├── example/           # 示例与测试程序
 ├── cmake/             # CMake 构建模块（选项、主库、工具链等）
+├── 3rdparts/          # 随仓库的第三方头文件（spdlog 等）
 ├── docs/              # 文档
 │   └── BUILD/         # 分平台构建说明
 ├── third_party_call/  # 第三方库独立试验（不参与主工程编译）
@@ -40,7 +41,7 @@ ToolKit/
 
 - **CMake** ≥ 3.20，**C++17**
 - **Boost**（system / thread / log 等；Windows 使用仓库旁 `third_party/boost_1_82_0`）
-- **spdlog**（header-only，路径 `../third_party/spdlog`）
+- **spdlog**（header-only，路径 `3rdparts/spdlog`）
 - **libuv**（Windows 使用 `../third_party/libuv`；Linux / macOS 需安装开发包）
 - 启用 WebSocket 时额外需要 **OpenSSL**
 

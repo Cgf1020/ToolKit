@@ -9,7 +9,7 @@
 brew install cmake ninja llvm lld boost libuv
 ```
 
-spdlog 取自 `../third_party/spdlog`。若 LLVM 不在默认路径：
+spdlog 取自仓库内 `3rdparts/spdlog`。若 LLVM 不在默认路径：
 
 ```bash
 export LLVM_INSTALL_DIR="$(brew --prefix llvm)"

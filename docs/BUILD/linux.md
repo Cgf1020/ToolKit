@@ -4,7 +4,7 @@ Linux 为单配置生成器，须设置 `CMAKE_BUILD_TYPE`（`Debug` 或 `Releas
 编译器：**GCC**（`g++`）或 **Clang**（`clang++`）。
 生成器：**Ninja**（`-G Ninja`）或 **Unix Makefiles**（默认）。与选哪个编译器无关。
 
-换编译器或 `CMAKE_BUILD_TYPE` 时请换构建目录。spdlog 取自 `../third_party/spdlog`。
+换编译器或 `CMAKE_BUILD_TYPE` 时请换构建目录。spdlog 取自仓库内 `3rdparts/spdlog`。
 
 ## 推荐：Ninja + 系统编译器（preset）
 

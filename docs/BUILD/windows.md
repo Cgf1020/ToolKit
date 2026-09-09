@@ -7,7 +7,7 @@
 - Ninja 是单配置，配置时须设 `CMAKE_BUILD_TYPE`。
 - Visual Studio 生成器不产出 `compile_commands.json`；clangd 用 Ninja。
 
-第三方在 `../third_party`（Boost 1.82、libuv、spdlog）。MSVC 与 ClangCL 链接同一套 `vc143` Boost。
+第三方：Boost 1.82、libuv 在 `../third_party`；spdlog 在仓库内 `3rdparts/spdlog`。MSVC 与 ClangCL 链接同一套 `vc143` Boost。
 
 ## ClangCL（推荐）
 

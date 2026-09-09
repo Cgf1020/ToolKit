@@ -253,10 +253,7 @@ else()
 endif()
 
 # spdlog（header-only）：实现走完整 include；公开头仅通过 spdlog/fmt 使用 {} 格式化
-if(NOT DEFINED THIRD_PARTY_DIR)
-    set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/../third_party")
-endif()
-set(SPDLOG_INCLUDE_DIR "${THIRD_PARTY_DIR}/spdlog/include")
+set(SPDLOG_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/3rdparts/spdlog/include")
 if(NOT EXISTS "${SPDLOG_INCLUDE_DIR}/spdlog/spdlog.h")
     message(FATAL_ERROR "spdlog not found at ${SPDLOG_INCLUDE_DIR}")
 endif()
