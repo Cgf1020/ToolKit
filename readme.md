@@ -36,10 +36,12 @@ ToolKit/
 
 产物默认输出到构建目录下的 `bin/`（多配置生成器还有 `Debug` / `Release` 子目录）。构建目录已 `.gitignore`：
 
-| 目录             | 说明                                                              |
-| ---------------- | ----------------------------------------------------------------- |
-| `build/`       | VS 2022 + ClangCL、Linux Ninja、macOS Xcode                       |
-| `build-ninja/` | Windows / macOS Ninja + LLVM（产出 `compile_commands.json`）      |
+| 目录               | 说明                                                              |
+| ------------------ | ----------------------------------------------------------------- |
+| `build/`         | 仓库 ClangCL + Visual Studio preset；Linux Ninja；macOS Xcode     |
+| `build-ninja/`   | 仓库 ClangCL / macOS LLVM 的 Ninja preset（`compile_commands.json`） |
+| `build-msvc/`    | 文档约定：MSVC + Visual Studio 生成器                             |
+| `build-msvc-ninja/` | 文档约定：MSVC + Ninja                                         |
 
 ## 依赖
 
@@ -55,20 +57,49 @@ Windows / 本机预编译库路径约定为相对本仓库的 `../third_party`�
 
 默认生成**动态库**（`BUILD_SHARED_LIBS=ON`），WebSocket 默认关闭（`ENABLE_WEBSOCKET=OFF`）。Windows / macOS 也可用 `CMakePresets.json`。
 
-### Windows（VS 2022 + ClangCL）
+### Windows（MSVC / Clang）
 
-本仓库 Windows 默认走 **ClangCL**，不是 MSVC。双目录：`build/` 给 Visual Studio 编译调试；`build-ninja/` 给 clangd（VS 生成器不产出 `compile_commands.json`）。多配置生成器须用 `--config` 选择 Debug / Release。
+编译器二选一：**MSVC**（`cl`）或 **Clang**（ClangCL / `clang-cl`）。
+CMake 负责生成构建文件；后端可用 **Visual Studio 生成器**（未指定 `-G` 时 Windows 上通常即此，产出 `.sln`，`cmake --build` 走 MSBuild）或 **Ninja**（`-G Ninja`，增量通常更快）。生成器与选哪个编译器无关。
+
+- Visual Studio 生成器是**多配置**，编译时用 `--config Debug` / `--config Release`。
+- Ninja 是**单配置**，配置时须设 `CMAKE_BUILD_TYPE`。
+- Visual Studio 生成器**不会**产出 `compile_commands.json`；clangd 请用 Ninja。
+
+换编译器或生成器时，请换一个构建目录，或删掉该目录下的 `CMakeCache.txt` 与 `CMakeFiles` 后再配置。
+
+第三方依赖位于 `../third_party`（Boost 1.82、libuv、spdlog）。MSVC 与 ClangCL 都链接同一套预编译 Boost（`vc143`）。
+
+#### MSVC
+
+Visual Studio 生成器（可用 VS 打开 `.sln` 调试）：
 
 ```powershell
-# VS 工程（编译 / 调试）
+cmake -S . -B build-msvc -A x64 -G "Visual Studio 17 2022" -DENABLE_WEBSOCKET=OFF
+cmake --build build-msvc --config Release
+# 或 Debug
+cmake --build build-msvc --config Debug
+```
+
+使用 Ninja（需已安装 `ninja`，并在 **x64 Native Tools Command Prompt for VS** 中执行，以便找到 `cl.exe`）：
+
+```powershell
+cmake -S . -B build-msvc-ninja `
+  -G Ninja `
+  -DCMAKE_BUILD_TYPE=Release `
+  -DENABLE_WEBSOCKET=OFF
+cmake --build build-msvc-ninja
+```
+
+#### Clang（ClangCL）
+
+Visual Studio 生成器 + ClangCL 工具集。仓库 preset `vs2022-clangcl` 产物在 `build/`：
+
+```powershell
 cmake --preset vs2022-clangcl
 cmake --build build --config Release
 # 或 Debug
 cmake --build build --config Debug
-
-# Ninja + clangd
-cmake --preset ninja-clangcl
-cmake --build build-ninja --target ToolKit
 ```
 
 等价手动配置：
@@ -76,6 +107,24 @@ cmake --build build-ninja --target ToolKit
 ```powershell
 cmake -S . -B build -A x64 -G "Visual Studio 17 2022" -T ClangCL -DENABLE_WEBSOCKET=OFF
 cmake --build build --config Release
+```
+
+使用 Ninja + `clang-cl`（产出 `compile_commands.json`）。仓库 preset `ninja-clangcl` 默认 **Debug**，产物在 `build-ninja/`：
+
+```powershell
+cmake --preset ninja-clangcl
+cmake --build build-ninja --target ToolKit
+```
+
+等价手动配置（工具链见 `cmake/toolchains/clangcl-db.cmake`）：
+
+```powershell
+cmake -S . -B build-ninja `
+  -G Ninja `
+  -DCMAKE_BUILD_TYPE=Release `
+  -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/clangcl-db.cmake `
+  -DENABLE_WEBSOCKET=OFF
+cmake --build build-ninja --target ToolKit
 ```
 
 ### Linux（GCC / Clang）
@@ -175,10 +224,17 @@ Linux：在 GCC / Clang 的配置命令中加 `-DENABLE_WEBSOCKET=ON` 即可。
 ### 只编某个示例
 
 ```powershell
-# Windows
+# Windows（以 ClangCL + Visual Studio 生成器为例）
 cmake --build build --target eventloop_test --config Debug
 cmake --build build --target logger_test --config Debug
 cmake --build build --target tcp_network_test --config Release
+
+# MSVC + Visual Studio 生成器
+cmake --build build-msvc --target eventloop_test --config Debug
+
+# Ninja（MSVC 或 ClangCL）无需 --config
+cmake --build build-msvc-ninja --target eventloop_test
+cmake --build build-ninja --target logger_test
 ```
 
 ```bash
@@ -205,9 +261,11 @@ target_link_libraries(your_app PRIVATE ToolKit)
 
 | 平台 / 配置                       | 路径                               |
 | --------------------------------- | ---------------------------------- |
-| Windows VS Debug                  | `build/bin/Debug/`               |
-| Windows VS Release                | `build/bin/Release/`             |
-| Windows Ninja（preset 为 Debug）    | `build-ninja/bin/`               |
+| Windows MSVC + VS Release         | `build-msvc/bin/Release/`        |
+| Windows MSVC + Ninja Release      | `build-msvc-ninja/bin/Release/`  |
+| Windows ClangCL + VS Debug        | `build/bin/Debug/`               |
+| Windows ClangCL + VS Release      | `build/bin/Release/`             |
+| Windows ClangCL + Ninja Debug     | `build-ninja/bin/Debug/`         |
 | Linux GCC Release                 | `build-gcc/bin/Release/`         |
 | Linux GCC + Ninja Release         | `build-gcc-ninja/bin/Release/`   |
 | Linux Clang Release               | `build-clang/bin/Release/`       |
@@ -219,10 +277,14 @@ target_link_libraries(your_app PRIVATE ToolKit)
 示例：
 
 ```powershell
-# Windows
+# Windows（ClangCL + Visual Studio 生成器）
 .\build\bin\Debug\eventloop_test.exe
 .\build\bin\Debug\logger_test.exe
 .\build\bin\Release\tcp_network_test.exe
+
+# MSVC
+.\build-msvc\bin\Release\eventloop_test.exe
+.\build-msvc-ninja\bin\Release\logger_test.exe
 ```
 
 ```bash
