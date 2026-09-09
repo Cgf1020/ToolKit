@@ -1,9 +1,19 @@
 # Build directories
 build/
 build-ninja/
+build-msvc/
+build-msvc-ninja/
+build-gcc/
+build-gcc-ninja/
+build-clang/
+build-clang-ninja/
 out/
 cmake-build-*/
 compile_commands.json
+
+# Windows is case-insensitive: `build/` would also ignore docs/BUILD/
+!docs/BUILD/
+!docs/BUILD/**
 
 # CMake generated files (in-source build artifacts)
 CMakeCache.txt

@@ -30,6 +30,31 @@
       }
     },
     {
+      "name": "vs2022-msvc",
+      "displayName": "VS 2022 + MSVC",
+      "description": "Visual Studio 17 2022 + MSVC (cl) toolset (IDE build)",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build-msvc",
+      "cacheVariables": {
+        "ENABLE_WEBSOCKET": "OFF",
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "ninja-msvc",
+      "displayName": "Ninja + MSVC",
+      "description": "MSVC cl + Ninja (run from x64 Native Tools Command Prompt); Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-msvc-ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "ENABLE_WEBSOCKET": "OFF",
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
       "name": "ninja-linux",
       "displayName": "Ninja (Linux)",
       "description": "Linux single-config Ninja build",
@@ -101,6 +126,24 @@
       "name": "ninja-toolkit",
       "displayName": "Ninja ToolKit (sync compile_commands)",
       "configurePreset": "ninja-clangcl",
+      "targets": ["ToolKit"]
+    },
+    {
+      "name": "msvc-debug",
+      "displayName": "MSVC Debug",
+      "configurePreset": "vs2022-msvc",
+      "configuration": "Debug"
+    },
+    {
+      "name": "msvc-release",
+      "displayName": "MSVC Release",
+      "configurePreset": "vs2022-msvc",
+      "configuration": "Release"
+    },
+    {
+      "name": "ninja-msvc-toolkit",
+      "displayName": "Ninja MSVC ToolKit",
+      "configurePreset": "ninja-msvc",
       "targets": ["ToolKit"]
     },
     {
