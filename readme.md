@@ -28,7 +28,6 @@ ToolKit/
 ├── cmake/             # CMake 构建模块（选项、主库、工具链等）
 ├── docs/              # 构建与测试文档
 ├── third_party_call/  # 第三方库独立试验（不参与主工程编译）
-├── beak/              # 历史/备份代码（不参与主库构建）
 ├── CMakeLists.txt
 ├── CMakePresets.json
 └── README.md
