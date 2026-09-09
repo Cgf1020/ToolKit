@@ -315,7 +315,7 @@ void testConcurrent()
     std::vector<std::thread> threads;
     threads.reserve(kThreads);
     for (int t = 0; t < kThreads; ++t) {
-        threads.emplace_back([t, kEach]() {
+        threads.emplace_back([t]() {
             for (int i = 0; i < kEach; ++i) {
                 LOG_INFO("thread-{} line-{}", t, i);
             }
@@ -850,9 +850,7 @@ int main(int argc, char** argv)
         writeReportFile(report, path);
     }
 
-    if (g_failed == 0) {
-        fs::remove_all("logger_test_output");
-    }
+    std::cout << "日志目录: " << fs::absolute("logger_test_output").string() << '\n';
 
     return g_failed == 0 ? 0 : 1;
 }

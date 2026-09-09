@@ -27,7 +27,7 @@ namespace itflee {
         workers_.reserve(num_threads_);
         is_running_.store(true);
         for (std::size_t i = 0; i < num_threads_; ++i) {
-            workers_.emplace_back([this, i]() {
+            workers_.emplace_back([this]() {
                 WorkerLoop();
             });
         }

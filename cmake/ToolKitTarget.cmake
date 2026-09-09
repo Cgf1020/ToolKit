@@ -12,6 +12,7 @@ function(set_common_output_dir target)
         LIBRARY_OUTPUT_DIRECTORY_RELEASE ${_BIN_DIR}/Release
         ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${_BIN_DIR}/Release
     )
+    toolkit_set_origin_rpath(${target})
 endfunction()
 
 # Prefer loading libToolKit.so from the executable directory ($ORIGIN / @loader_path)

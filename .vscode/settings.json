@@ -1,5 +1,8 @@
 {
     "files.encoding": "utf8",
+    "workbench.editorAssociations": {
+        "**/docs/BUILD/linux.md": "default"
+    },
     "clangd.path": "D:/work_software/LLVM/bin/clangd.exe",
     "clangd.arguments": [
         "--background-index",

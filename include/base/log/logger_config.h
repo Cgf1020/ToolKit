@@ -35,6 +35,20 @@ struct ModuleConfig {
     std::optional<LogLevel> level;          ///< 该模块文件的最低级别；空则使用全局 level
     std::optional<bool> console;            ///< 该模块是否输出到控制台；空则使用全局 console
     std::optional<LogLevel> console_level;  ///< 该模块控制台最低级别；空则使用全局 console_level
+
+    ModuleConfig() = default;
+    ModuleConfig(std::string name_,
+                 std::string file_,
+                 std::optional<LogLevel> level_ = {},
+                 std::optional<bool> console_ = {},
+                 std::optional<LogLevel> console_level_ = {})
+        : name(std::move(name_)),
+          file(std::move(file_)),
+          level(std::move(level_)),
+          console(console_),
+          console_level(console_level_)
+    {
+    }
 };
 
 /**

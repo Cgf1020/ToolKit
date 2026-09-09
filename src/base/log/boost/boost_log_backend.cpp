@@ -92,9 +92,9 @@ void appendTimestampMs(logging::formatting_ostream& strm, const boost::posix_tim
     }
     const auto d = t.date();
     const auto tod = t.time_of_day();
-    const int ms = static_cast<int>(tod.total_milliseconds() % 1000);
-    char buf[40];
-    std::snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02d.%03d",
+    const unsigned ms = static_cast<unsigned>(tod.total_milliseconds() % 1000);
+    char buf[64];
+    std::snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02d.%03u",
                   static_cast<int>(d.year()), static_cast<int>(d.month()), static_cast<int>(d.day()),
                   static_cast<int>(tod.hours()), static_cast<int>(tod.minutes()),
                   static_cast<int>(tod.seconds()), ms);

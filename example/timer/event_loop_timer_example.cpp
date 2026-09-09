@@ -297,7 +297,7 @@ void test_concurrent_schedule_after() {
 
     std::vector<std::thread> workers;
     for (int t = 0; t < threads; ++t) {
-        workers.emplace_back([loop, &post_hits, per]() {
+        workers.emplace_back([loop, &post_hits]() {
             for (int i = 0; i < per; ++i) {
                 loop->Post([&post_hits]() { post_hits.fetch_add(1, std::memory_order_relaxed); });
             }

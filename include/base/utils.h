@@ -27,7 +27,7 @@ namespace utils
 		ss << num;
 		ss >> str;
 
-		return std::move(str);
+		return str;
 	}
 
 	//字符串转数字

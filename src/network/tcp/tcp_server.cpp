@@ -385,7 +385,7 @@ private:
         auto conn = std::make_shared<TcpConnectionImpl>(std::move(socket), id);
 
         auto weak_self = std::weak_ptr<TcpServerBoost>(shared_from_this());
-        sub.loop->Post([this, weak_self, conn, id, sub_idx]() {
+        sub.loop->Post([weak_self, conn, id, sub_idx]() {
             if (auto self = weak_self.lock()) {
                 auto& s = *self->sub_reactors_[sub_idx];
                 {
