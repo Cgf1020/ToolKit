@@ -3,14 +3,29 @@
     "workbench.editorAssociations": {
         "**/docs/BUILD/linux.md": "default"
     },
-    "clangd.path": "D:/work_software/LLVM/bin/clangd.exe",
-    "clangd.arguments": [
-        "--background-index",
-        "--compile-commands-dir=${workspaceFolder}",
-        "--query-driver=D:/work_software/LLVM/bin/clang-cl.exe;D:/Microsoft/Microsoft Visual Studio/**/clang-cl.exe"
+    "files.maxMemoryForLargeFilesMB": 4096,
+    "clangd.enable": false,
+    "C_Cpp.intelliSenseEngine": "default",
+    "C_Cpp.workspaceParsingPriority": "highest",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/compile_commands.json",
+    "C_Cpp.default.compilerPath": "/usr/bin/clang++",
+    "C_Cpp.default.intelliSenseMode": "linux-clang-x64",
+    "C_Cpp.default.cppStandard": "c++17",
+    "C_Cpp.default.cStandard": "c17",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/include",
+        "${workspaceFolder}/src",
+        "${workspaceFolder}/3rdparts/spdlog/include",
+        "${workspaceFolder}/3rdparts/spdlog/include/spdlog/fmt"
     ],
-    "C_Cpp.intelliSenseEngine": "disabled",
-    "C_Cpp.default.compilerPath": "D:/Microsoft/Microsoft Visual Studio/2022/Community/VC/Tools/Llvm/x64/bin/clang-cl.exe",
+    "C_Cpp.default.browse.path": [
+        "${workspaceFolder}/include",
+        "${workspaceFolder}/src",
+        "${workspaceFolder}/example"
+    ],
+    "C_Cpp.default.defines": [
+        "ITFLEE_BUILDING_LIBRARY"
+    ],
     "files.associations": {
         "variant": "cpp",
         "algorithm": "cpp",
