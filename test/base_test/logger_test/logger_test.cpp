@@ -332,20 +332,20 @@ void testConcurrent()
     expect(body.find("thread-3 line-199") != std::string::npos, "conc.sample3");
 }
 
-void testSourceLocationAndThread()
+void testSourceLocation()
 {
     const std::string dir = makeDir("src");
     auto config = baseConfig(dir);
     config.source_location = itflee::SourceLocationMode::On;
     config.modules = {{"application", "application.log", {}}};
     expect(itflee::Logger::init(config), "src: init");
-    LOG_INFO("with-source");
+    LOG_I("with-source");
     itflee::Logger::shutdown();
 
     const std::string body = readModuleLogs(dir, "application");
     expect(body.find("with-source") != std::string::npos, "src.message");
     expect(body.find("logger_test.cpp:") != std::string::npos, "src.file_line");
-    expect(body.find("[thread:") != std::string::npos, "src.thread");
+    expect(body.find("[thread:") == std::string::npos, "src.no_thread");
 }
 
 void testUnknownModuleFallback()
@@ -611,7 +611,7 @@ void runSuite(itflee::LogBackendKind backend)
     runCase("按大小滚动与时间戳文件名", testRotation);
     runCase("异步 shutdown 刷空", testAsyncShutdownFlushes);
     runCase("四线程并发写", testConcurrent);
-    runCase("源文件名与线程号", testSourceLocationAndThread);
+    runCase("源文件名与行号", testSourceLocation);
     runCase("未知模块回退", testUnknownModuleFallback);
     runCase("LOG_EXCEPTION", testExceptionMacro);
     runCase("按模块覆盖控制台", testPerModuleConsole);

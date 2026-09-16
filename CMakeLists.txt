@@ -10,6 +10,10 @@ include(cmake/ToolKitCompileCommands.cmake)
 include(cmake/ToolKitTarget.cmake)
 include(cmake/ToolKitLibrary.cmake)
 
+if(EXISTS "${PROJECT_SOURCE_DIR}/test/CMakeLists.txt")
+    add_subdirectory(test)
+endif()
+
 if(EXISTS "${PROJECT_SOURCE_DIR}/example/CMakeLists.txt")
     add_subdirectory(example)
 endif()

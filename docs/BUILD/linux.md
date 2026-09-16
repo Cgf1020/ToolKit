@@ -266,12 +266,13 @@ cmake --preset ninja-clang-release -DENABLE_WEBSOCKET=ON
 
 其它组合在对应配置命令上加 `-DENABLE_WEBSOCKET=ON`。缓存里已有旧值时，删掉该目录的 `CMakeCache.txt` 再配。
 
-## 只编某个示例
+## 只编某个测试或示例
 
 ```bash
 cmake --build build --target eventloop_test
 cmake --build build-release --target eventloop_test
 cmake --build build --target logger_test
+cmake --build build --target logger_example
 cmake --build build-gcc --target eventloop_test
 cmake --build build-gcc-release --target logger_test
 cmake --build build-gcc-ninja --target logger_test

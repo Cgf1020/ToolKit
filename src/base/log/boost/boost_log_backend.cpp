@@ -4,7 +4,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/log/attributes/clock.hpp>
 #include <boost/log/attributes/constant.hpp>
-#include <boost/log/attributes/current_thread_id.hpp>
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include <boost/log/attributes/value_extraction.hpp>
 #include <boost/log/core.hpp>
@@ -106,7 +105,6 @@ void formatRecord(const logging::record_view& rec, logging::formatting_ostream& 
     const auto ts = logging::extract<boost::posix_time::ptime>("TimeStamp", rec);
     const auto sev = logging::extract<LogLevel>("Severity", rec);
     const auto file = logging::extract<std::string>("FileTag", rec);
-    const auto tid = logging::extract<attrs::current_thread_id::value_type>("ThreadID", rec);
     const auto msg = rec[expr::smessage];
 
     strm << '[';
@@ -120,10 +118,6 @@ void formatRecord(const logging::record_view& rec, logging::formatting_ostream& 
     strm << "] [";
     if (file) {
         strm << *file;
-    }
-    strm << "] [thread:";
-    if (tid) {
-        strm << *tid;
     }
     strm << "] ";
     if (msg) {
@@ -315,7 +309,6 @@ struct BoostLogBackend::Impl {
 
         auto core = logging::core::get();
         core->add_global_attribute("TimeStamp", attrs::local_clock());
-        core->add_global_attribute("ThreadID", attrs::current_thread_id());
         core->set_logging_enabled(true);
 
         try {

@@ -1,6 +1,6 @@
 🛠 `eventloop_test.cpp` 逐条测试说明（EventLoopInterface / EventLoopBoost）
 
-本文档用于解释 `ToolKit/example/base_test/eventloop_test/eventloop_test.cpp` 中每一个 `*_test` 用例的目的、执行步骤与判定逻辑。该可执行文件会依次运行所有测试；任何断言失败都会抛异常并导致进程返回 `1`。
+本文档用于解释 `ToolKit/test/base_test/eventloop_test/eventloop_test.cpp` 中每一个 `*_test` 用例的目的、执行步骤与判定逻辑。该可执行文件会依次运行所有测试；任何断言失败都会抛异常并导致进程返回 `1`。
 
 ## 0. 运行方式
 

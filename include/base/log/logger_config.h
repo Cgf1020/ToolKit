@@ -68,9 +68,9 @@ struct LoggerConfig {
     bool async{true};                ///< 是否异步写盘
     std::size_t async_queue_size{8192};  ///< 异步队列容量（条）；Boost.Log 为编译期常量，实现固定 8192
     std::size_t async_thread_count{1};  ///< spdlog 共享线程池大小；Boost.Log 每个 sink 一条投递线程，本字段无效
-    SourceLocationMode source_location{SourceLocationMode::Auto};  ///< 是否在源文件名后附加行号，如 [file.cpp:123]
+    SourceLocationMode source_location{SourceLocationMode::On};  ///< 是否在源文件名后附加行号，如 [file.cpp:123]
     LogLevel flush_level{LogLevel::Warn};  ///< 达到该级别立即 flush（含更高级别）
-    std::string default_module;      ///< LOG_INFO 等默认宏写入的模块；空则用 modules 第一项或自动创建的 default
+    std::string default_module;      ///< LOG_I 等默认宏写入的模块；空则用 modules 第一项或自动创建的 default
     std::vector<ModuleConfig> modules;  ///< 模块列表；空则自动创建 name=default, file=default.log
     LogBackendKind backend{LogBackendKind::Spdlog};  ///< 底层实现；换后端须先 shutdown 再 init
 };

@@ -1,6 +1,6 @@
 # ThreadPoolInvokeInterface 测试说明
 
-本文档说明 `example/thread_test/threadpool_invoke_full_test.cpp` 中各个测试用例的目的和覆盖范围，用于验证 `ThreadPoolInvokeInterface` 及其实现 `ThreadPoolInvokeImpl` 的行为是否正确、稳定。
+本文档说明 `test/thread_test/threadpool_invoke_full_test.cpp` 中各个测试用例的目的和覆盖范围，用于验证 `ThreadPoolInvokeInterface` 及其实现 `ThreadPoolInvokeImpl` 的行为是否正确、稳定。
 
 ## 测试列表
 

@@ -2,7 +2,7 @@
 
 ## 1. 文档目的
 
-本文档说明 `example/network_test/tcp_network_test.cpp` 的测试范围、测试项与功能逻辑，便于开发、联调和回归验证。
+本文档说明 `test/network_test/tcp_network_test.cpp` 的测试范围、测试项与功能逻辑，便于开发、联调和回归验证。
 
 测试对象：`ToolKit` 中的 TCP 抽象接口与实现（`TcpServerInterface` / `TcpClientInterface` / `TcpConnection`）。
 
@@ -24,7 +24,7 @@
 
 ## 3. 测试程序结构
 
-文件：`example/network_test/tcp_network_test.cpp`
+文件：`test/network_test/tcp_network_test.cpp`
 
 主要组成：
 

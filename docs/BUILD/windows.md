@@ -109,11 +109,12 @@ cmake --build build-msvc --config Release
 
 其它组合在对应配置命令上加 `-DENABLE_WEBSOCKET=ON`。缓存里已有旧值时，删掉该目录的 `CMakeCache.txt` 再配。
 
-## 只编某个示例
+## 只编某个测试或示例
 
 ```powershell
 cmake --build build --target eventloop_test --config Debug
 cmake --build build --target logger_test --config Debug
+cmake --build build --target logger_example --config Debug
 cmake --build build --target tcp_network_test --config Release
 cmake --build build-msvc --target eventloop_test --config Debug
 cmake --build build-msvc-ninja --target eventloop_test
@@ -140,11 +141,12 @@ cmake --build build-ninja --target logger_test
 
 | CMake Target                 | 说明           |
 | ---------------------------- | -------------- |
-| `ToolKit`                  | 主库           |
-| `eventloop_test`           | EventLoop 测试 |
-| `logger_test`              | Logger 测试    |
-| `event_loop_timer_example` | 定时器示例     |
-| `tcp_network_test`         | TCP 网络测试   |
+| `ToolKit`                    | 主库               |
+| `logger_example`             | Logger 用法演示    |
+| `eventloop_test`             | EventLoop 测试     |
+| `logger_test`                | Logger 测试        |
+| `event_loop_timer_example`   | 定时器自检         |
+| `tcp_network_test`           | TCP 网络测试       |
 
 ## 清理
 

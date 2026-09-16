@@ -6,7 +6,7 @@ alwaysApply: false
 
 # 日志规范
 
-只用本工程统一的日志接口（`LOG_DEBUG` / `LOG_INFO` / `LOG_WARN` / `LOG_ERROR`）。禁止 `std::cout` / `std::cerr`、禁止第二套日志库、禁止用打印当断言。
+只用本工程统一的日志接口（`LOG_D` / `LOG_I` / `LOG_W` / `LOG_E`，长名 `LOG_DEBUG` 等仍可用）。禁止 `std::cout` / `std::cerr`、禁止第二套日志库、禁止用打印当断言。
 
 ## 级别
 
@@ -25,11 +25,11 @@ alwaysApply: false
 
 ```cpp
 // BAD: 每帧 Info
-LOG_INFO("frame ts={}", ts);
+LOG_I("frame ts={}", ts);
 
 // GOOD: 周期汇总走 Debug
 if (stats_due) {
-    LOG_DEBUG("frames={} drops={}", n, d);
+    LOG_D("frames={} drops={}", n, d);
 }
 ```
 
@@ -45,6 +45,6 @@ if (stats_due) {
 
 禁止打印密码、token、密钥、完整连接串；配置打印必须脱敏。禁止二进制、整帧图像、超大 dump。
 
-日志库已提供文件/函数/行号时，不要再手工加模块名前缀。跨模块分流用 `LOG_M_INFO("communication", ...)` 或 `Logger::get("communication")`。
+日志库已提供文件/函数/行号时，不要再手工加模块名前缀。跨模块分流用 `LOG_M_I("communication", ...)` 或 `Logger::get("communication")`。
 
 信号处理器里不用日志宏。析构只打必要生命周期，且不访问已释放对象。

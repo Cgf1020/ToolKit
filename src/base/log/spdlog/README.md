@@ -1,6 +1,6 @@
 # spdlog 讲解与原理
 
-本目录是 Logger 的 **spdlog 后端**。业务代码只走 `itflee::Logger` / `LOG_INFO`，看不到 `spdlog::`。这里说明 spdlog 本身怎么工作，以及本工程如何把它拼成「模块分文件 + error 汇聚 + 可选控制台」。
+本目录是 Logger 的 **spdlog 后端**。业务代码只走 `itflee::Logger` / `LOG_I`，看不到 `spdlog::`。这里说明 spdlog 本身怎么工作，以及本工程如何把它拼成「模块分文件 + error 汇聚 + 可选控制台」。
 
 相关文件：
 
@@ -18,7 +18,7 @@ spdlog 是 header-only 的 C++ 日志库。核心就四块，可以当成积木�
 
 ```text
                     ┌─────────────┐
-  LOG_INFO("hi") →  │   logger    │  具名入口，先按 logger.level 过滤
+  LOG_I("hi") →  │   logger    │  具名入口，先按 logger.level 过滤
                     └──────┬──────┘
                            │ log_msg（级别、时间、线程、正文、源位置）
                            ▼
@@ -96,12 +96,11 @@ sink 继承 `spdlog::sinks::sink`，常见实现：
 | `%E`                   | 本工程自定义：`INFO` / `WARN` / `ERROR` / `CRITICAL`（官方 `%l` 是小写 `info`） |
 | `%s`                   | 源文件名（只要`log()` 时传了 `source_loc`）                                             |
 | `%#`                   | 行号                                                                                        |
-| `%t`                   | 线程 id                                                                                     |
 | `%v`                   | 正文                                                                                        |
 
 本工程两种模式：
 
-- `source_location` 关：`[%Y-%m-%d %H:%M:%S.%e] [%E] [%s] [thread:%t] %v`
+- `source_location` 关：`[%Y-%m-%d %H:%M:%S.%e] [%E] [%s] %v`
 - 开：`[%s:%#]`，即 `[logger_test.cpp:123]`
 
 `logger->set_formatter(...)` 会 clone 一份到**每个** sink。之后改 logger 的 formatter 不会自动改已经挂上的 sink。
@@ -199,7 +198,7 @@ flowchart TB
 ```mermaid
 flowchart TB
   subgraph 门面
-    API["Logger / LOG_INFO"]
+    API["Logger / LOG_I"]
   end
   subgraph "SpdlogBackend::Impl"
     M1["logger application"]

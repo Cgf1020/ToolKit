@@ -29,9 +29,9 @@ enum class LogLevel {
  * @note 线程安全：不适用（无共享可变状态）。
  */
 enum class SourceLocationMode {
-    Auto = 0,  ///< Debug 构建记录，Release 不记录
-    On = 1,    ///< 始终记录
-    Off = 2    ///< 始终不记录
+    Auto = 0,  ///< Debug 构建记录行号，Release 不记录
+    On = 1,    ///< 始终记录行号（默认）
+    Off = 2    ///< 始终不记录行号，仍输出文件名
 };
 
 /**

@@ -8,6 +8,7 @@
 #include "base/log/logger_config.h"
 
 #include <exception>
+#include <sstream>
 #include <string>
 #include <string_view>
 
@@ -42,7 +43,7 @@ inline std::string formatLog(const char* fmt, const Args&... args)
  * @brief 具名模块日志句柄，以及进程级 init/shutdown。
  *
  * Application 在启动时调用 init，在停业务后调用 shutdown。
- * 业务通过 get(name) 或 LOG_INFO / LOG_M_INFO 打日志。
+ * 业务通过 get(name) 或 LOG_I / LOG_M_I 打日志。
  *
  * @note 线程安全：部分安全。不安全 API：init、shutdown（不可与任何公开 API 并发）。
  * @note 安全 API：get、getDefault、isInitialized、shouldLog、log、logMessage、
@@ -106,7 +107,7 @@ public:
     static Logger get(std::string_view name);
 
     /**
-     * @brief 获取默认模块句柄（供 LOG_INFO 等宏使用）。
+     * @brief 获取默认模块句柄（供 LOG_I 等宏使用）。
      * @return 默认模块日志句柄。
      */
     static Logger getDefault();
@@ -240,73 +241,143 @@ private:
 /**
  * @brief 向默认模块输出 TRACE。
  */
-#define LOG_TRACE(...) ::itflee::Logger::getDefault().log(::itflee::LogLevel::Trace, ITFLEE_LOG_LOC, __VA_ARGS__)
+#define LOG_T(...) ::itflee::Logger::getDefault().log(::itflee::LogLevel::Trace, ITFLEE_LOG_LOC, __VA_ARGS__)
 
 /**
  * @brief 向默认模块输出 DEBUG。
  */
-#define LOG_DEBUG(...) ::itflee::Logger::getDefault().log(::itflee::LogLevel::Debug, ITFLEE_LOG_LOC, __VA_ARGS__)
+#define LOG_D(...) ::itflee::Logger::getDefault().log(::itflee::LogLevel::Debug, ITFLEE_LOG_LOC, __VA_ARGS__)
 
 /**
  * @brief 向默认模块输出 INFO。
  */
-#define LOG_INFO(...) ::itflee::Logger::getDefault().log(::itflee::LogLevel::Info, ITFLEE_LOG_LOC, __VA_ARGS__)
+#define LOG_I(...) ::itflee::Logger::getDefault().log(::itflee::LogLevel::Info, ITFLEE_LOG_LOC, __VA_ARGS__)
 
 /**
  * @brief 向默认模块输出 WARN。
  */
-#define LOG_WARN(...) ::itflee::Logger::getDefault().log(::itflee::LogLevel::Warn, ITFLEE_LOG_LOC, __VA_ARGS__)
+#define LOG_W(...) ::itflee::Logger::getDefault().log(::itflee::LogLevel::Warn, ITFLEE_LOG_LOC, __VA_ARGS__)
 
 /**
  * @brief 向默认模块输出 ERROR。
  */
-#define LOG_ERROR(...) ::itflee::Logger::getDefault().log(::itflee::LogLevel::Error, ITFLEE_LOG_LOC, __VA_ARGS__)
+#define LOG_E(...) ::itflee::Logger::getDefault().log(::itflee::LogLevel::Error, ITFLEE_LOG_LOC, __VA_ARGS__)
 
 /**
  * @brief 向默认模块输出 CRITICAL。
  */
-#define LOG_CRITICAL(...) ::itflee::Logger::getDefault().log(::itflee::LogLevel::Critical, ITFLEE_LOG_LOC, __VA_ARGS__)
+#define LOG_C(...) ::itflee::Logger::getDefault().log(::itflee::LogLevel::Critical, ITFLEE_LOG_LOC, __VA_ARGS__)
+
+#define LOG_TRACE(...) LOG_T(__VA_ARGS__)
+#define LOG_DEBUG(...) LOG_D(__VA_ARGS__)
+#define LOG_INFO(...) LOG_I(__VA_ARGS__)
+#define LOG_WARN(...) LOG_W(__VA_ARGS__)
+#define LOG_ERROR(...) LOG_E(__VA_ARGS__)
+#define LOG_CRITICAL(...) LOG_C(__VA_ARGS__)
 
 /**
  * @brief 向指定模块输出 TRACE。
  * @param module 模块名字符串。
  */
-#define LOG_M_TRACE(module, ...) ::itflee::Logger::get(module).log(::itflee::LogLevel::Trace, ITFLEE_LOG_LOC, __VA_ARGS__)
+#define LOG_M_T(module, ...) ::itflee::Logger::get(module).log(::itflee::LogLevel::Trace, ITFLEE_LOG_LOC, __VA_ARGS__)
 
 /**
  * @brief 向指定模块输出 DEBUG。
  * @param module 模块名字符串。
  */
-#define LOG_M_DEBUG(module, ...) ::itflee::Logger::get(module).log(::itflee::LogLevel::Debug, ITFLEE_LOG_LOC, __VA_ARGS__)
+#define LOG_M_D(module, ...) ::itflee::Logger::get(module).log(::itflee::LogLevel::Debug, ITFLEE_LOG_LOC, __VA_ARGS__)
 
 /**
  * @brief 向指定模块输出 INFO。
  * @param module 模块名字符串。
  */
-#define LOG_M_INFO(module, ...) ::itflee::Logger::get(module).log(::itflee::LogLevel::Info, ITFLEE_LOG_LOC, __VA_ARGS__)
+#define LOG_M_I(module, ...) ::itflee::Logger::get(module).log(::itflee::LogLevel::Info, ITFLEE_LOG_LOC, __VA_ARGS__)
 
 /**
  * @brief 向指定模块输出 WARN。
  * @param module 模块名字符串。
  */
-#define LOG_M_WARN(module, ...) ::itflee::Logger::get(module).log(::itflee::LogLevel::Warn, ITFLEE_LOG_LOC, __VA_ARGS__)
+#define LOG_M_W(module, ...) ::itflee::Logger::get(module).log(::itflee::LogLevel::Warn, ITFLEE_LOG_LOC, __VA_ARGS__)
 
 /**
  * @brief 向指定模块输出 ERROR。
  * @param module 模块名字符串。
  */
-#define LOG_M_ERROR(module, ...) ::itflee::Logger::get(module).log(::itflee::LogLevel::Error, ITFLEE_LOG_LOC, __VA_ARGS__)
+#define LOG_M_E(module, ...) ::itflee::Logger::get(module).log(::itflee::LogLevel::Error, ITFLEE_LOG_LOC, __VA_ARGS__)
 
 /**
  * @brief 向指定模块输出 CRITICAL。
  * @param module 模块名字符串。
  */
-#define LOG_M_CRITICAL(module, ...) ::itflee::Logger::get(module).log(::itflee::LogLevel::Critical, ITFLEE_LOG_LOC, __VA_ARGS__)
+#define LOG_M_C(module, ...) ::itflee::Logger::get(module).log(::itflee::LogLevel::Critical, ITFLEE_LOG_LOC, __VA_ARGS__)
+
+#define LOG_M_TRACE(module, ...) LOG_M_T(module, __VA_ARGS__)
+#define LOG_M_DEBUG(module, ...) LOG_M_D(module, __VA_ARGS__)
+#define LOG_M_INFO(module, ...) LOG_M_I(module, __VA_ARGS__)
+#define LOG_M_WARN(module, ...) LOG_M_W(module, __VA_ARGS__)
+#define LOG_M_ERROR(module, ...) LOG_M_E(module, __VA_ARGS__)
+#define LOG_M_CRITICAL(module, ...) LOG_M_C(module, __VA_ARGS__)
 
 /**
  * @brief 记录标准异常，等价于 ERROR + e.what()。
  * @param e 异常对象，需提供 what()。
  */
-#define LOG_EXCEPTION(e) LOG_ERROR("Exception: {}", (e).what())
+#define LOG_EX(e) LOG_E("Exception: {}", (e).what())
+#define LOG_EXCEPTION(e) LOG_EX(e)
+
+/**
+ * @brief 流式日志：`LOG_I_S(a << " " << b)`。级别不够时不拼字符串。
+ * @note 不要写成 `oss << (a << b)`；宏内是 `_oss << __VA_ARGS__`。
+ */
+#define ITFLEE_LOG_STREAM(logger_expr, level, ...)                                                     \
+    do {                                                                                               \
+        const ::itflee::Logger _itflee_log_h = (logger_expr);                                          \
+        if (_itflee_log_h.shouldLog(level)) {                                                          \
+            std::ostringstream _itflee_log_oss;                                                        \
+            _itflee_log_oss << __VA_ARGS__;                                                            \
+            const std::string _itflee_log_text = _itflee_log_oss.str();                                \
+            _itflee_log_h.logMessage(level, ITFLEE_LOG_LOC, _itflee_log_text);                         \
+        }                                                                                              \
+    } while (0)
+
+#define LOG_T_S(...)                                                                                   \
+    ITFLEE_LOG_STREAM(::itflee::Logger::getDefault(), ::itflee::LogLevel::Trace, __VA_ARGS__)
+#define LOG_D_S(...)                                                                                   \
+    ITFLEE_LOG_STREAM(::itflee::Logger::getDefault(), ::itflee::LogLevel::Debug, __VA_ARGS__)
+#define LOG_I_S(...)                                                                                   \
+    ITFLEE_LOG_STREAM(::itflee::Logger::getDefault(), ::itflee::LogLevel::Info, __VA_ARGS__)
+#define LOG_W_S(...)                                                                                   \
+    ITFLEE_LOG_STREAM(::itflee::Logger::getDefault(), ::itflee::LogLevel::Warn, __VA_ARGS__)
+#define LOG_E_S(...)                                                                                   \
+    ITFLEE_LOG_STREAM(::itflee::Logger::getDefault(), ::itflee::LogLevel::Error, __VA_ARGS__)
+#define LOG_C_S(...)                                                                                   \
+    ITFLEE_LOG_STREAM(::itflee::Logger::getDefault(), ::itflee::LogLevel::Critical, __VA_ARGS__)
+
+#define LOG_TRACE_S(...) LOG_T_S(__VA_ARGS__)
+#define LOG_DEBUG_S(...) LOG_D_S(__VA_ARGS__)
+#define LOG_INFO_S(...) LOG_I_S(__VA_ARGS__)
+#define LOG_WARN_S(...) LOG_W_S(__VA_ARGS__)
+#define LOG_ERROR_S(...) LOG_E_S(__VA_ARGS__)
+#define LOG_CRITICAL_S(...) LOG_C_S(__VA_ARGS__)
+
+#define LOG_M_T_S(module, ...)                                                                         \
+    ITFLEE_LOG_STREAM(::itflee::Logger::get(module), ::itflee::LogLevel::Trace, __VA_ARGS__)
+#define LOG_M_D_S(module, ...)                                                                         \
+    ITFLEE_LOG_STREAM(::itflee::Logger::get(module), ::itflee::LogLevel::Debug, __VA_ARGS__)
+#define LOG_M_I_S(module, ...)                                                                         \
+    ITFLEE_LOG_STREAM(::itflee::Logger::get(module), ::itflee::LogLevel::Info, __VA_ARGS__)
+#define LOG_M_W_S(module, ...)                                                                         \
+    ITFLEE_LOG_STREAM(::itflee::Logger::get(module), ::itflee::LogLevel::Warn, __VA_ARGS__)
+#define LOG_M_E_S(module, ...)                                                                         \
+    ITFLEE_LOG_STREAM(::itflee::Logger::get(module), ::itflee::LogLevel::Error, __VA_ARGS__)
+#define LOG_M_C_S(module, ...)                                                                         \
+    ITFLEE_LOG_STREAM(::itflee::Logger::get(module), ::itflee::LogLevel::Critical, __VA_ARGS__)
+
+#define LOG_M_TRACE_S(module, ...) LOG_M_T_S(module, __VA_ARGS__)
+#define LOG_M_DEBUG_S(module, ...) LOG_M_D_S(module, __VA_ARGS__)
+#define LOG_M_INFO_S(module, ...) LOG_M_I_S(module, __VA_ARGS__)
+#define LOG_M_WARN_S(module, ...) LOG_M_W_S(module, __VA_ARGS__)
+#define LOG_M_ERROR_S(module, ...) LOG_M_E_S(module, __VA_ARGS__)
+#define LOG_M_CRITICAL_S(module, ...) LOG_M_C_S(module, __VA_ARGS__)
 
 #endif  // ITFLEE_LOGGER_H_

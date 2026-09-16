@@ -90,9 +90,9 @@ std::unique_ptr<spdlog::formatter> makeFormatter(bool with_source)
     auto formatter = std::make_unique<spdlog::pattern_formatter>();
     formatter->add_flag<UpperLevelFlag>('E');
     if (with_source) {
-        formatter->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%E] [%s:%#] [thread:%t] %v");
+        formatter->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%E] [%s:%#] %v");
     } else {
-        formatter->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%E] [%s] [thread:%t] %v");
+        formatter->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%E] [%s] %v");
     }
     return formatter;
 }

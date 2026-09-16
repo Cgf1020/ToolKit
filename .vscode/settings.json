@@ -21,7 +21,8 @@
     "C_Cpp.default.browse.path": [
         "${workspaceFolder}/include",
         "${workspaceFolder}/src",
-        "${workspaceFolder}/example"
+        "${workspaceFolder}/example",
+        "${workspaceFolder}/test"
     ],
     "C_Cpp.default.defines": [
         "ITFLEE_BUILDING_LIBRARY"
