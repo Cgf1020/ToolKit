@@ -91,3 +91,6 @@ Win32/
 *.swp
 *~
 .gitnexus
+
+# Cursor IDE / agent local config
+.cursor/
