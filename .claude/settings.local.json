@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(find d:work_dirmyselfcodeSelfProjectToolKitinclude -type f -name *.h -o -name *.hpp -o -name *.cpp)"
-    ]
-  }
-}
