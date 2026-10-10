@@ -208,8 +208,9 @@ ECC 没有单独的设计软件，也没有单独窗口。每个名字都是一�
 ```text
 可以。按这个计划只做第 1 步。
 使用 cpp-coding-standards。
+用现代 C++ 写，不要用 C 风格：不要 malloc/free、printf、裸 new/delete 和 C 字符串函数。资源用 RAII，字符串用 std::string，容器用标准库，所有权用智能指针。
 使用 tdd-workflow。
-/cpp-test 只实现第 1 步。先写会失败的 GoogleTest，确认失败后再写最少实现。不要做后面的步骤。
+/cpp-test 只实现第 1 步。先写会失败的 GoogleTest，确认失败后再写最少实现。测试通过后停下来，说明改了哪些文件。不要做后面的步骤，不要做覆盖率统计。
 ```
 
 这一步通过后，把「第 1 步」改成「第 2 步」再发一次，直到计划里的步骤做完。
@@ -264,12 +265,12 @@ ECC 没有单独的设计软件，也没有单独窗口。每个名字都是一�
 
 ### 场景 2：新项目，没有数据库
 
-C++ 库、命令行工具、静态站点都属于这一类。跳过 `database-reviewer`。
+C++ 库或命令行工具属于这一类。跳过 `database-reviewer`。
 
 **需求**
 
 ```text
-/plan-prd 做一个命令行工具，读取本地配置并定时打印状态。先写需求和使用方式。不要设计模块，不要写代码。
+/plan-prd 做一个 C++ 命令行工具，读取本地配置并定时打印状态。先写需求和使用方式。不要设计模块，不要写代码。
 ```
 
 同意后：
@@ -281,41 +282,28 @@ C++ 库、命令行工具、静态站点都属于这一类。跳过 `database-re
 **架构**
 
 ```text
-用 architect。根据已确认的需求划分模块、数据流和公开接口，设计一下程序的架构和框架。这个项目没有数据库。先不要写代码。
+用 architect。根据已确认的需求划分 C++ 模块、数据流和公开接口。这个项目没有数据库。先不要写代码。
 用 Mermaid 画一张时序图，并保存到 docs/architecture/。
 ```
 
 同意后直接做实现计划，不发表结构设计：
 
 ```text
-架构可以。按这个架构拆实现步骤，仍然不要写代码。
 /plan 只拆步骤，不要写代码。
+按已确认的需求、架构和表结构拆实现步骤，并把计划写到 doc/plans/。先不要写代码。
 ```
 
-写代码、审查、留档与场景 1 的第 5 步到第 7 步相同。静态网页没有 C++ 测试时，批准计划改用：
+计划确认后写 C++，使用 ECC 的写代码指令：
 
 ```text
-可以。按这个计划从第 1 步做到最后一步。
-不要增加需求里没有的登录、后台、数据库和外网接口。
-每做完一步，先对照这一步的验证项，通过后再做下一步。
-全部完成后，对照验收清单逐条说明结果。
+可以。按这个计划只做第 1 步。
+使用 cpp-coding-standards。
+用现代 C++ 写，不要用 C 风格：不要 malloc/free、printf、裸 new/delete 和 C 字符串函数。资源用 RAII，字符串用 std::string，容器用标准库，所有权用智能指针。
+使用 tdd-workflow。
+/cpp-test 只实现第 1 步。先写会失败的 GoogleTest，确认失败后再写最少实现。测试通过后停下来，说明改了哪些文件。不要做后面的步骤，不要做覆盖率统计。
 ```
 
-静态站验收通过后：
-
-```text
-验收通过。不要增加范围之外的功能。
-/code-review 只审查这次新增的页面和数据文件。只报告问题，先不要改代码。
-```
-
-审查没有问题后，同样留下文件：
-
-```text
-/update-codemaps
-根据 web/ 更新 docs/CODEMAPS/frontend.md，写清页面和数据文件。不要改页面。
-/update-docs
-若有构建或预览步骤，同步进 docs/RUNBOOK.md。不要改页面。
-```
+审查和文档与场景 1 第 6 步、第 7 步相同：`/cpp-review`、`/code-review`，然后 `architecture-decision-records`、`/update-codemaps`、`/update-docs`。
 
 ### 场景 3：在已有架构上增加功能
 
@@ -340,8 +328,9 @@ C++ 库、命令行工具、静态站点都属于这一类。跳过 `database-re
 ```text
 可以。按这个计划只做第 1 步。
 使用 cpp-coding-standards。
+用现代 C++ 写，不要用 C 风格：不要 malloc/free、printf、裸 new/delete 和 C 字符串函数。资源用 RAII，字符串用 std::string，容器用标准库，所有权用智能指针。
 使用 tdd-workflow。
-/cpp-test 只实现第 1 步。先写会失败的 GoogleTest，确认失败后再写最少实现。不要做后面的步骤，不要改无关模块。
+/cpp-test 只实现第 1 步。先写会失败的 GoogleTest，确认失败后再写最少实现。测试通过后停下来，说明改了哪些文件。不要做后面的步骤，不要改无关模块，不要做覆盖率统计。
 ```
 
 后续步骤把序号改掉再发。全部写完再审查，话术在本场景末尾。
@@ -368,7 +357,7 @@ C++ 库、命令行工具、静态站点都属于这一类。跳过 `database-re
 不想分三次发时，用一条命令走完「摸清现有代码、只追加这块设计、等批准、再实现」：
 
 ```text
-/feature-dev 给任务队列加可取消的提交接口。先对照现有架构追加这一块设计，等我批准后再写。不要重做现有架构。写的时候使用 cpp-coding-standards 和 tdd-workflow。
+/feature-dev 给任务队列加可取消的提交接口。先对照现有架构追加这一块设计，等我批准后再写。不要重做现有架构。写的时候使用 cpp-coding-standards 和 tdd-workflow。用现代 C++ 写，不要用 C 风格：不要 malloc/free、printf、裸 new/delete 和 C 字符串函数。
 ```
 
 `/feature-dev` 内部会用到 `code-architect`。空仓库用场景 1，不用这条。
@@ -420,6 +409,7 @@ C++ 库、命令行工具、静态站点都属于这一类。跳过 `database-re
 
 ```text
 使用 cpp-coding-standards。
+用现代 C++ 写，不要用 C 风格：不要 malloc/free、printf、裸 new/delete 和 C 字符串函数。资源用 RAII，字符串用 std::string，容器用标准库，所有权用智能指针。
 使用 tdd-workflow。
 /cpp-test 多线程写同一文件时偶发丢行。先写一条能稳定复现的失败测试，确认它先失败，再做最小修复。不要顺手重构。
 ```
@@ -467,6 +457,7 @@ C++ 库、命令行工具、静态站点都属于这一类。跳过 `database-re
 ```text
 可以。按这个计划重构。
 使用 cpp-coding-standards。
+用现代 C++ 写，不要用 C 风格：不要 malloc/free、printf、裸 new/delete 和 C 字符串函数。资源用 RAII，字符串用 std::string，容器用标准库，所有权用智能指针。
 使用 tdd-workflow。
 /cpp-test 先跑通现有测试，再调整结构。公开接口和测试断言保持不变。
 ```
@@ -519,7 +510,7 @@ C++ 改动：
 /code-review 审查当前未提交的改动。只报告问题，先不要改代码。
 ```
 
-只审某一个目录时写明路径，例如 `/code-review 只审查 web/ 里这次新增的页面。只报告问题，先不要改代码。`
+只审某一个目录时写明路径，例如 `/code-review 只审查 src/ 里这次新增的 C++ 文件。只报告问题，先不要改代码。`
 
 审查列出问题后：
 
@@ -555,6 +546,7 @@ C++ 改动：
 
 ```text
 使用 cpp-coding-standards。
+用现代 C++ 写，不要用 C 风格：不要 malloc/free、printf、裸 new/delete 和 C 字符串函数。资源用 RAII，字符串用 std::string，容器用标准库，所有权用智能指针。
 使用 tdd-workflow。
 /cpp-test 异步队列在高并发下分配过多。只改热路径：减少堆分配、避免不必要的拷贝。先补一条能比较改前改后行为的测试，不要改对外格式。
 ```
